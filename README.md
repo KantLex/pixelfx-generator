@@ -141,6 +141,13 @@ edit and effect works in both.
   ruled in light ink. A faint wash of the palette keeps a hint of each effect's colour. On a transparent sheet the
   paper drops away and the ink and filled shapes remain.
 
+In the **Handheld** and **Ink sketch** looks the effect's own colours only decide how light or dark each pixel is, so
+the editor's palette switches to the look's colours: the four screen shades, or paper, outline ink, hatching and light
+ink. Hue, saturation and each swatch change those instead (an amber or blue screen, blue ink on cream), the palette
+strip in the notes and the page's accent colour follow, and **Reset to the seed** puts them back. These colours belong
+to the look rather than the effect, so they stay as you generate new effects, and the link keeps them (`lhue`, `lsat`,
+`l0`–`l3`, for example `#s20482~lhue:120,look:handheld`). Exports list them in their JSON as `"lookPalette"`.
+
 The look is kept in the link (`#s20482~look:cel`), stays on as you generate new effects, and applies to the
 variations strip and to exports, whose files get the look in their name (`-cel`, `-handheld`, `-ink`) and `"look"` in their JSON.
 
