@@ -52,7 +52,7 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--panel-2); 
 .titlebar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; padding: 12px 12px 10px; }
 .name { font-family: var(--display); font-size: clamp(18px, 3.4vw, 24px); line-height: 1.2; text-wrap: balance; }
 .seedbox { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.seedbox input { width: 11ch; font: inherit; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 4px 6px; }
+.seedbox input { width: 12ch; font: inherit; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 4px 6px; }
 .screen { position: relative; background: #000; line-height: 0; }
 #fx { width: 100%; max-width: 100%; aspect-ratio: 160 / 96; image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
 .hud { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; line-height: 1.3; }
@@ -77,7 +77,6 @@ button:hover { border-color: var(--muted); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .45; cursor: default; }
-details.edit summary { display: flex; align-items: center; gap: 8px; }
 .badge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; background: var(--accent); color: var(--accent-ink); padding: 1px 6px; }
 .edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 20px; }
 .edit-grid .wide { grid-column: 1 / -1; }
@@ -95,6 +94,15 @@ details.edit summary { display: flex; align-items: center; gap: 8px; }
 details.recipe { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
 details.recipe summary { cursor: pointer; font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 details.recipe[open] summary { margin-bottom: 10px; }
+/* the editor is a main tool, so its header reads as a section heading, not a footnote */
+details.edit { background: var(--panel-2); padding: 0; }
+details.edit summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 12px; list-style: none; font-family: var(--display); font-size: 15px; text-transform: none; letter-spacing: .02em; color: var(--fg); }
+details.edit summary::-webkit-details-marker { display: none; }
+details.edit summary::before { content: '\25B8'; display: inline-block; color: var(--accent); transition: transform .15s; }
+details.edit[open] summary::before { transform: rotate(90deg); }
+details.edit summary .hint { font-family: var(--body); font-size: 13px; letter-spacing: 0; color: var(--muted); }
+details.edit[open] summary { margin-bottom: 0; }
+details.edit .edit-grid { padding: 2px 12px 14px; }
 .recipe-row { display: flex; flex-direction: column; gap: 8px; }
 .caption { font-size: 14px; color: var(--muted); }
 
@@ -169,6 +177,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     <div class="transport">
       <button id="gen" class="primary" type="button">Generate</button>
       <button id="vary" type="button">Variation</button>
+      <button id="edit-btn" type="button" aria-controls="edit-box">Edit</button>
       <button id="back" type="button" disabled>Previous</button>
       <button id="play" type="button">Pause</button>
       <input id="scrub" type="range" min="0" max="5" step="0.005" value="0" aria-label="Scrub time">
@@ -208,8 +217,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <input type="radio" name="speed" id="speed-q" value="0.25"><label for="speed-q">¼×</label>
         </div></div>
     </div>
-    <details class="recipe edit" id="edit-box">
-      <summary>Edit this effect <span class="badge" id="edited" hidden>edited</span></summary>
+    <details class="recipe edit" id="edit-box" open>
+      <summary>Edit this effect <span class="badge" id="edited" hidden>edited</span><span class="hint">shape, material, colours, size and timing</span></summary>
       <div class="edit-grid">
         <div class="group"><label class="lbl" for="ed-shape">Shape</label><select id="ed-shape"></select></div>
         <div class="group"><label class="lbl" for="ed-mat">Material</label><select id="ed-mat"></select></div>
@@ -273,8 +282,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <div class="note">
         <h3>One seed, one recipe</h3>
         <div>
-          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are fourteen one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw) and thirteen loops (aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath), so 27 shapes × 8 materials makes <strong>216 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
-          <p>Seeds come in generations, so adding shapes never changes an old link. Seeds up to 2,147,483,647 are the first generation: nine shapes and five materials. Up to 4,294,967,295 is the second: sixteen shapes and eight materials. Up to 8,589,934,591 is the third, which draws from all 27 shapes. Each plays exactly as it always has. Generate picks from the newest.</p>
+          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are nineteen one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw, meteor, quake, dash, starburst, warp) and eighteen loops (aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath, ladder, core, pool, scan, cascade), so 37 shapes × 8 materials makes <strong>296 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
+          <p>Seeds come in generations, so adding shapes never changes an old link. Seeds up to 2,147,483,647 are the first generation: nine shapes and five materials. Up to 4,294,967,295 is the second: sixteen shapes and eight materials. Up to 8,589,934,591 is the third: 27 shapes. Up to 12,884,901,887 is the fourth, which draws from all 37. Each plays exactly as it always has. Generate picks from the newest.</p>
         </div>
       </div>
       <div class="note">
@@ -295,6 +304,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
             <li><strong>Beacon</strong>: a steel pad with ripples, a soft column of light, and rings of light lifting off it.</li>
             <li><strong>Swarm</strong>: bright motes on closed figure-of-eight paths, each trailing the material.</li>
             <li><strong>Breath</strong>: a stream of the material pouring from a spout in a widening cone, white-hot at the lips.</li>
+            <li><strong>Ladder</strong>: an arc that strikes at the narrow foot of two rods, climbs and bows as it stretches, and snaps at the top.</li>
+            <li><strong>Core</strong>: a plasma core beating inside a turning cage of bars, throwing a shock ring on every beat.</li>
+            <li><strong>Pool</strong>: drops of the material fall into a pool on the floor at their own moments, and rings spread across it.</li>
+            <li><strong>Scan</strong>: brackets lock onto the figure and a line sweeps head to toe, leaving an outline that cools.</li>
+            <li><strong>Cascade</strong>: the material pours over a rock lip in sliding strands and crashes into foam and mist.</li>
           </ul>
         </div>
       </div>
@@ -322,8 +336,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <table>
         <thead><tr><th scope="col"></th><th scope="col">PixelFX</th><th scope="col">This generator</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 8.6 billion seeds gives a different effect</td></tr>
-          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>216 types: 14 one-shot shapes and 13 loops, each in 8 materials, with the numbers varied inside each. No UI, transitions or critters</td></tr>
+          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 12.9 billion seeds gives a different effect</td></tr>
+          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>296 types: 19 one-shot shapes and 18 loops, each in 8 materials, with the numbers varied inside each. No UI, transitions or critters</td></tr>
           <tr><th scope="row">Palettes</th><td>A curated ramp per effect, which callers can swap</td><td>A new hue-shifted ramp per seed, which can be locked while the shape changes</td></tr>
           <tr><th scope="row">Characters</th><td>A 3D-skeleton fighter with wind-ups, hit reactions and a target dummy</td><td>None</td></tr>
           <tr><th scope="row">Quality</th><td>Each effect held to a written quality bar and benchmarked against references</td><td>Uneven. Guard rails keep results readable, but nobody has reviewed a given seed</td></tr>
@@ -343,6 +357,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <li>Export as a sprite sheet with frame data, or as a GIF.</li>
       <li>A second generation of seeds with three more one-shots (slash, beam, pillar), four more loops (brazier, orb, ward, missile) and three more materials: poison bubbles that swell and pop, holy glints, and water drops that splash on the floor.</li>
       <li>A third generation with six more one-shots (implosion, spikes, firework, wave, chain, claw) and five more loops (fountain, cloud, beacon, swarm, breath).</li>
+      <li>A fourth generation with five more one-shots (meteor, quake, dash, starburst, warp) and five more loops (ladder, core, pool, scan, cascade).</li>
       <li>An editor for shape, material (or none), palette and timing, kept in the link.</li>
     </ul>
   </section>
@@ -570,7 +585,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const ADJ = { flame: 'Burning', frost: 'Frozen', storm: 'Charged', dust: 'Earthen', void: 'Hollow' };
 
   // shapes whose contact happens in the air, like a nova: round rings, sparks all round, nothing on the floor
-  const AIR = ['slash', 'beam', 'implosion', 'firework', 'chain', 'claw'];
+  const AIR = ['slash', 'beam', 'implosion', 'firework', 'chain', 'claw', 'dash', 'stars'];
   // the second generation passes its own shape and material; the first draws them here, in this order
   function makeShape(R, shape = R.pick(SHAPES), mat = R.pick(MATS)) {
     const ground = shape !== 'nova' && !AIR.includes(shape);
@@ -613,9 +628,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // the third generation adds more shapes
   const SHAPES3 = ['implosion', 'spikes', 'firework', 'wave', 'chain', 'claw'], LOOPS3 = ['fountain', 'cloud', 'beacon', 'swarm', 'breath'];
   Object.assign(NOUN, { implosion: 'Implosion', spikes: 'Spikes', firework: 'Firework', wave: 'Wave', chain: 'Chain', claw: 'Claw', fountain: 'Fountain', cloud: 'Cloud', beacon: 'Beacon', swarm: 'Swarm', breath: 'Breath' });
-  const ALL_SHOTS = [...SHAPES, ...SHAPES2, ...SHAPES3], ALL_LOOPS = [...LOOPS, ...LOOPS2, ...LOOPS3], ALL_MATS = [...MATS, ...MATS2];
-  // seeds up to GEN1 are the first generation, up to GEN2 the second, and up to MAX_SEED the third
-  const GEN1 = 2147483647, GEN2 = 4294967295, MAX_SEED = 8589934591;
+  // the third generation picks from exactly this list, in this order
+  const GEN3_SHAPES = [...SHAPES, ...SHAPES2, ...SHAPES3, ...LOOPS, ...LOOPS2, ...LOOPS3];
+  // the fourth generation adds more shapes again
+  const SHAPES4 = ['meteor', 'quake', 'dash', 'stars', 'warp'], LOOPS4 = ['ladder', 'core', 'pool', 'scan', 'cascade'];
+  Object.assign(NOUN, { meteor: 'Meteor', quake: 'Quake', dash: 'Dash', stars: 'Starburst', warp: 'Warp', ladder: 'Ladder', core: 'Core', pool: 'Pool', scan: 'Scan', cascade: 'Cascade' });
+  const ALL_SHOTS = [...SHAPES, ...SHAPES2, ...SHAPES3, ...SHAPES4], ALL_LOOPS = [...LOOPS, ...LOOPS2, ...LOOPS3, ...LOOPS4], ALL_MATS = [...MATS, ...MATS2];
+  // seeds up to GEN1 are the first generation, then GEN2, GEN3, and up to MAX_SEED the fourth
+  const GEN1 = 2147483647, GEN2 = 4294967295, GEN3 = 8589934591, MAX_SEED = 12884901887;
   // numbers only the new shapes use, drawn after the shared ones
   function extraShape(R, shape, p) {
     if (shape === 'slash') Object.assign(p, {
@@ -643,6 +663,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       alt: Math.round(R.range(18, 30)), wind: R.range(0.25, 0.4), clawLen: R.range(24, 38), clawGap: R.range(5, 8), clawAng: R.range(0.9, 1.3), clawW: R.range(2, 3.5),
       rings: 0, rays: 0,
     });
+    if (shape === 'meteor') Object.assign(p, {
+      wind: R.range(0.5, 0.9), rock: R.range(3, 5.5), mDist: R.range(60, 95), tail: R.range(18, 30),
+      grit: p.grit + 8, cracks: Math.max(4, p.cracks), rings: Math.max(1, p.rings),
+    });
+    if (shape === 'quake') Object.assign(p, { wind: R.range(0.3, 0.5), quakeT: R.range(0.9, 1.4), quakeH: R.range(3, 6), quakeV: R.range(60, 110), rings: 0, cracks: Math.max(4, p.cracks) });
+    if (shape === 'dash') Object.assign(p, { alt: 12, wind: R.range(0.3, 0.45), dashLen: R.range(70, 110), ghosts: R.int(4, 7), rings: 0 });
+    if (shape === 'stars') Object.assign(p, { alt: Math.round(R.range(20, 34)), wind: R.range(0.35, 0.6), starN: R.int(5, 9), starSize: R.range(2.5, 4.5), starArms: R.pick([4, 4, 6]), sparks: Math.round(p.sparks * 0.5) });
+    if (shape === 'warp') Object.assign(p, { wind: R.range(0.5, 0.8), warpT: R.range(0.8, 1.2), warpW: R.range(5, 9), rings: Math.max(1, p.rings), cracks: 0 });
     return p;
   }
   function extraLoop(L, shape, p) {
@@ -655,6 +683,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (shape === 'beacon') Object.assign(p, { padR: L.range(10, 16), colH: L.range(50, 76), lifts: L.int(3, 6) });
     if (shape === 'swarm') Object.assign(p, { swarm: L.int(5, 12), roam: L.range(18, 34), sy: L.range(10, 22), hover: L.range(20, 36) });
     if (shape === 'breath') Object.assign(p, { mouthY: L.range(18, 40), reach: L.range(60, 100), cone: L.range(0.25, 0.6), dir: L.pick([1, -1]) });
+    if (shape === 'ladder') Object.assign(p, { rodGap: L.range(10, 18), rodH: L.range(32, 48) });
+    if (shape === 'core') Object.assign(p, { coreR: L.range(4, 7), coreY: L.range(24, 36), bars: L.int(4, 7) });
+    if (shape === 'pool') Object.assign(p, { poolR: L.range(24, 38), drops: L.int(2, 4) });
+    if (shape === 'scan') Object.assign(p, { brackets: L.range(4, 7), dir: L.pick([1, -1]) });
+    if (shape === 'cascade') Object.assign(p, { fallW: L.range(6, 12), lipY: L.range(12, 24) });
     return p;
   }
   // later generations: one stream picks the shape and material from the generation's own lists, then all the numbers
@@ -666,7 +699,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   function makeRecipe(seed, keep) {
     let s, pal;
-    if (seed > GEN2) ({ s, pal } = makeRecipeFrom(rng(((seed - GEN2 - 1) ^ 0x6a09e667) >>> 0), [...ALL_SHOTS, ...ALL_LOOPS], ALL_MATS));
+    if (seed > GEN3) ({ s, pal } = makeRecipeFrom(rng(((seed - GEN3 - 1) ^ 0x3c6ef372) >>> 0), [...ALL_SHOTS, ...ALL_LOOPS], ALL_MATS));
+    else if (seed > GEN2) ({ s, pal } = makeRecipeFrom(rng(((seed - GEN2 - 1) ^ 0x6a09e667) >>> 0), GEN3_SHAPES, ALL_MATS));
     else if (seed > GEN1) ({ s, pal } = makeRecipeFrom(rng(seed), GEN2_SHAPES, GEN2_MATS));
     else {
       const R = rng(seed);
@@ -689,7 +723,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return rec;
   }
   // how long a one-shot keeps pouring after contact: the eruption's column, the beam
-  const sustain = (rec) => (rec.shape === 'geyser' ? rec.p.erupt : rec.shape === 'beam' ? rec.p.beam : rec.shape === 'wave' ? rec.p.waveT : 0);
+  const SUSTAIN = { geyser: 'erupt', beam: 'beam', wave: 'waveT', quake: 'quakeT', warp: 'warpT' };
+  const sustain = (rec) => (SUSTAIN[rec.shape] ? rec.p[SUSTAIN[rec.shape]] : 0);
   // same shape and palette, numbers nudged, different particles
   function vary(rec, seed) {
     const R = rng(seed), p = { ...rec.p };
@@ -713,10 +748,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // so a seed plus its edits always gives the same effect and both fit in a link.
   const KNOBS = [
     { id: 'x', label: 'Position', abs: 'x', min: 20, max: 140, step: 1, fmt: (v) => `${v} px` },
-    { id: 'size', label: 'Size', min: 0.5, max: 1.6, mult: ['ringR', 'hero', 'rayLen', 'crystal', 'slashR', 'slashW', 'beamW', 'colW', 'puffSize', 'rx', 'ry', 'orbitR', 'vr', 'vh', 'rr', 'os', 'dr', 'dh', 'head', 'bowl', 'flameH', 'trail', 'implR', 'spikeH', 'spikeLen', 'clawLen', 'clawW', 'waveH', 'waveLen', 'gap', 'jetH', 'basin', 'arcSpread', 'cloudW', 'padR', 'colH', 'roam', 'sy', 'reach'] },
-    { id: 'amount', label: 'Particles', min: 0, max: 2, int: true, mult: ['sparks', 'puffs', 'grit', 'embers', 'shards', 'tongues', 'motes', 'wisps', 'orbit', 'bands', 'spikeN', 'nodes', 'fall', 'blobs', 'lifts', 'swarm'] },
+    { id: 'size', label: 'Size', min: 0.5, max: 1.6, mult: ['ringR', 'hero', 'rayLen', 'crystal', 'slashR', 'slashW', 'beamW', 'colW', 'puffSize', 'rx', 'ry', 'orbitR', 'vr', 'vh', 'rr', 'os', 'dr', 'dh', 'head', 'bowl', 'flameH', 'trail', 'implR', 'spikeH', 'spikeLen', 'clawLen', 'clawW', 'waveH', 'waveLen', 'gap', 'jetH', 'basin', 'arcSpread', 'cloudW', 'padR', 'colH', 'roam', 'sy', 'reach', 'rock', 'tail', 'quakeH', 'dashLen', 'starSize', 'warpW', 'rodGap', 'rodH', 'coreR', 'poolR', 'brackets', 'fallW'] },
+    { id: 'amount', label: 'Particles', min: 0, max: 2, int: true, mult: ['sparks', 'puffs', 'grit', 'embers', 'shards', 'tongues', 'motes', 'wisps', 'orbit', 'bands', 'spikeN', 'nodes', 'fall', 'blobs', 'lifts', 'swarm', 'ghosts', 'starN', 'bars', 'drops'] },
     { id: 'wind', label: 'Wind-up', min: 0.5, max: 2, mult: ['wind'], shot: true },
-    { id: 'pour', label: 'Pour time', min: 0.5, max: 2, mult: ['erupt', 'beam', 'hold', 'waveT', 'spikeHold'], shot: true, only: ['geyser', 'beam', 'pillar', 'wave', 'spikes'] },
+    { id: 'pour', label: 'Pour time', min: 0.5, max: 2, mult: ['erupt', 'beam', 'hold', 'waveT', 'spikeHold', 'quakeT', 'warpT'], shot: true, only: ['geyser', 'beam', 'pillar', 'wave', 'spikes', 'quake', 'warp'] },
     { id: 'burst', label: 'Spark speed', min: 0.4, max: 1.8, mult: ['sparkSpeed'], shot: true },
     { id: 'gravity', label: 'Gravity', min: 0.2, max: 2, mult: ['gravity'], shot: true },
     { id: 'stop', label: 'Hit-stop', min: 0, max: 3, mult: ['stop'], shot: true },
@@ -860,6 +895,16 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // wave: where the crest is, e seconds after it launches
   const waveEnd = (rec) => clamp(rec.p.x + rec.p.dir * rec.p.waveLen, 6, 154);
   const waveX = (rec, e) => rec.p.x + (waveEnd(rec) - rec.p.x) * (1 - Math.pow(1 - clamp(e / rec.p.waveT), 2));
+  // meteor: the rock's path from high on one side down to the floor, speeding up
+  function meteorAt(rec, u) {
+    const p = rec.p, sx = p.x - p.dir * p.mDist, e = Math.pow(clamp(u), 1.4);
+    return [sx + (p.x - sx) * e, -8 + (FLOOR - 3 + 8) * e];
+  }
+  // dash: the figure crosses from its start to the hit in the last few hundredths of the wind-up
+  const DASH = 0.12;
+  const dashStart = (rec) => clamp(rec.p.x - rec.p.dir * rec.p.dashLen, 6, 154);
+  // the hooded figure as one flat colour, for after-images and fades
+  function silhouette(L, T, c, a) { for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) if (FIG[y][x] !== '.') put(L + x, T + y, c, a); }
   function createFx(rec) {
     const C = rec.pal, R = rng(rec.sim * 7 + 1);
     const st = { rec, t: 0, hit: false, R, C, FR: [WHITE, C[7], C[6], C[5], C[4], C[3], C[2], C[1]], ps: [], lights: [], cracks: [], forks: [] };
@@ -946,6 +991,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       const ang = nova ? R.range(0, TAU) : -Math.PI / 2 + R.range(-1.3, 1.3);
       st.forks.push({ v: makeFork(R, fx, fy, ang, R.range(16, 38)), t0: st.t + i * 0.04 + R.range(0, 0.05), life: R.range(0.15, 0.35) });
     }
+    if (rec.shape === 'stars')
+      for (let i = 0; i < p.starN; i++) {
+        const a = (TAU * i) / Math.max(1, p.starN) + R.range(-0.3, 0.3), v = R.range(40, 90);
+        spawn(st, 'star', fx, fy, Math.cos(a) * v, Math.sin(a) * v, R.range(1.6, 2.4), { size: p.starSize * R.range(0.7, 1.2), spin: R.range(-6, 6), ang: R.range(0, TAU) });
+      }
     const crys = rec.shape === 'shatter' ? crystalPts(rec, 1) : null;
     for (let i = 0; i < p.shards; i++) {
       const x = crys ? cx + R.range(-crys.w, crys.w) : fx, y = crys ? FLOOR - R.range(1, crys.h) : fy;
@@ -970,6 +1020,13 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         if (R() < 0.15 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(12, 26); spawn(st, 'streak', mx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.4, -Math.sin(a) * d * 1.4, 0.6, { tx: mx, ty: cy }); }
       } else if (rec.shape === 'pillar') {
         if (R() < 0.08 + 0.3 * u) { const a = R.range(0, TAU), r = 4 + (1 - u) * 14; spawn(st, 'mote', cx + Math.cos(a) * r, FLOOR + 1 + Math.sin(a) * r * 0.28, 0, -R.range(15, 40), R.range(0.2, 0.45)); }
+      } else if (rec.shape === 'meteor') {
+        // the rock sheds the material and sparks behind it
+        const [x, y] = meteorAt(rec, u);
+        if (R() < 0.6) spawnPuff(st, x, y, -p.dir * R.range(5, 20), -R.range(5, 15), 0.5);
+        if (R() < 0.3) spawn(st, 'spark', x, y, -p.dir * R.range(20, 60), -R.range(10, 40), R.range(0.2, 0.5));
+      } else if (rec.shape === 'stars') {
+        if (R() < 0.15 + 0.5 * u) { const a = R.range(0, TAU), d = R.range(14, 26); spawn(st, 'streak', cx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.3, -Math.sin(a) * d * 1.3, 0.6, { tx: cx, ty: cy }); }
       } else if (rec.shape === 'implosion') {
         // everything rushes in, faster and thicker as it goes
         if (R() < 0.35 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(26, 50); spawn(st, 'streak', cx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.8, -Math.sin(a) * d * 1.8, 0.6, { tx: cx, ty: cy }); }
@@ -1000,6 +1057,22 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         spawnPuff(st, sp.x, FLOOR - 2, R.range(-15, 15), -R.range(10, 30), 0.6);
       }
       st.lights.push({ x: p.x, y: FLOOR - p.spikeH * 0.5, r: p.spikeLen * 0.7, c: st.C[6], k: 0.8, life: 0.3, max: 0.3 });
+    }
+    if (rec.shape === 'quake' && st.hit && t - IMP < p.quakeT) {
+      // two fronts run out along the floor, kicking up grit and dust as they pass
+      const d = p.quakeV * (t - IMP);
+      for (const x of [p.x - d, p.x + d]) {
+        if (x < 0 || x > W) continue;
+        if (R() < 0.35) spawn(st, 'grit', x, FLOOR - 1, R.range(-20, 20), -R.range(40, 100), R.range(0.8, 1.4), { rock: mixC(st.C[2], [80, 72, 92], 0.6) });
+        if (R() < 0.15) spawnPuff(st, x, FLOOR - 1, R.range(-10, 10), -R.range(10, 30), 0.6);
+        if (R() < 0.06) spawn(st, 'spark', x, FLOOR - 1, R.range(-40, 40), -R.range(60, 140), R.range(0.3, 0.6));
+      }
+    }
+    if (rec.shape === 'warp' && st.hit && t - IMP < p.warpT) {
+      // sparks peel off the scan line, the material pools at the feet
+      const y = FLOOR - FH + FH * ((t - IMP) / p.warpT);
+      if (R() < 0.4) { const s = R() < 0.5 ? -1 : 1; spawn(st, 'mote', p.x + s * 7, y, s * R.range(20, 50), R.range(-10, 10), R.range(0.2, 0.4)); }
+      if (R() < 0.15) spawnPuff(st, p.x + R.range(-6, 6), FLOOR - 1, R.range(-20, 20), -R.range(5, 20), 0.6);
     }
     if (rec.shape === 'wave' && st.hit && t - IMP < p.waveT) {
       const x = waveX(rec, t - IMP), h = p.waveH * Math.sin(Math.PI * Math.min(1, ((t - IMP) / p.waveT) * 1.2));
@@ -1062,6 +1135,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         case 'drop': q.vy += p.gravity * 0.7 * dt; break;
         case 'twinkle': q.vx = Math.sin(st.t * 1.5 + q.seed) * 6; q.vy += (6 - q.vy) * dt; break;
         case 'splash': q.vx = 0; q.vy = 0; break;
+        case 'star': q.vx *= 1 - 1.6 * dt; q.vy = q.vy * (1 - 1.6 * dt) + 10 * dt; q.ang += q.spin * dt * (q.life / q.max); break;
       }
       q.x += q.vx * dt; q.y += q.vy * dt;
       if ((q.k === 'spark' || q.k === 'grit' || q.k === 'shard') && q.y >= FLOOR && q.vy > 0) {
@@ -1069,7 +1143,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         if (((q.k === 'grit' || q.k === 'shard') && q.bounces >= 2) || Math.abs(q.vy) < 25) { q.vy = 0; q.vx *= 0.9; if (q.k !== 'spark') { q.rest = true; q.vx = 0; } }
         else { q.vy *= q.k === 'spark' ? -0.38 : -0.3; q.vx *= 0.7; if (q.k === 'shard') q.spin *= -0.5; }
       }
-      if ((q.k === 'flake' || q.k === 'twinkle') && q.y > FLOOR) q.life = Math.min(q.life, 0.2);
+      if ((q.k === 'flake' || q.k === 'twinkle' || q.k === 'star') && q.y > FLOOR) q.life = Math.min(q.life, 0.2);
       // a drop that reaches the floor becomes a little crown
       if (q.k === 'drop' && q.y >= FLOOR && q.vy > 0) Object.assign(q, { k: 'splash', y: FLOOR, vx: 0, vy: 0, life: 0.3, max: 0.3 });
       out.push(q);
@@ -1159,6 +1233,55 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     glow(cx, FLOOR - 4, 16 + w * 2, WHITE, 0.6 * (1 - e / p.hold));
   }
 
+  function drawQuake(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, q = e / p.quakeT, d = p.quakeV * e, h = p.quakeH * (1 - q);
+    for (const x of [p.x - d, p.x + d]) {
+      line(p.x, FLOOR + 1, x, FLOOR + 1, C[4], 0.6 * (1 - q));
+      if (h < 0.5) continue;
+      // the floor heaves up as the front passes
+      for (let dx = -5; dx <= 5; dx++) { const hh = h * (1 - (dx / 5) ** 2); if (hh >= 0.5) { line(x + dx, FLOOR, x + dx, FLOOR - hh, [58, 50, 80]); put(x + dx, FLOOR - hh, C[6]); } }
+      glow(x, FLOOR - 1, 8 + h, C[6], 0.5 * (1 - q));
+    }
+  }
+  function drawDash(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, sx = dashStart(rec), T = FLOOR - FH;
+    // after-images along the path, fading from the start end first
+    const fade = 1 - clamp(e / 0.6);
+    if (fade > 0)
+      for (let g = 0; g < p.ghosts; g++) {
+        const f = (g + 1) / (p.ghosts + 1), x = sx + (p.x - sx) * f, a = fade * (0.25 + 0.6 * f);
+        silhouette(Math.round(x) - 5, T, f > 0.7 ? C[6] : C[5], a);
+        line(x - p.dir * 6, FLOOR - 6 - (g % 3) * 5, x, FLOOR - 6 - (g % 3) * 5, C[7], a);
+      }
+    // the figure lands at the hit and fades away before the end
+    const a = 1 - clamp((e - 1.8) / 0.8);
+    if (a > 0) { if (a >= 1) figure(C, p.x - 5, T); else silhouette(p.x - 5, T, [36, 32, 48], a); }
+  }
+  function drawWarp(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, L = p.x - 5, T = FLOOR - FH, q = clamp(e / p.warpT), scanY = T + FH * q;
+    // the beam, thinning as the scan finishes, then pinching shut
+    const w = e < p.warpT ? p.warpW * (1 - q * 0.5) : p.warpW * 0.5 * (1 - clamp((e - p.warpT) / 0.25));
+    if (w > 0.3)
+      for (let y = 0; y < FLOOR; y++) for (let dx = -Math.ceil(w); dx <= Math.ceil(w); dx++) {
+        const d = Math.abs(dx) / w;
+        if (d <= 1) put(p.x + dx, y, d < 0.3 ? WHITE : C[6], d < 0.3 ? 0.7 : 0.35);
+      }
+    // the figure is painted in row by row, white-hot where the scan just passed, cooling to its own colours
+    const fadeOut = 1 - clamp((e - p.warpT - 1.6) / 0.8);
+    if (fadeOut < 1) { if (fadeOut > 0) silhouette(L, T, [36, 32, 48], fadeOut); }
+    else if (q >= 1) figure(C, L, T);
+    else for (let y = 0; y < FH; y++) {
+      if (T + y > scanY) break;
+      const age = (scanY - (T + y)) / FH;
+      for (let x = 0; x < FW; x++) {
+        const ch = FIG[y][x];
+        if (ch === '.') continue;
+        const own = ch === 'o' ? [18, 15, 24] : ch === 'e' ? C[7] : x < 5 ? [50, 44, 64] : [36, 32, 48];
+        put(L + x, T + y, age < 0.08 ? WHITE : age < 0.2 ? C[7] : age < 0.35 ? C[6] : own);
+      }
+    }
+    if (q < 1) { line(L - 3, scanY, L + FW + 2, scanY, WHITE); glow(p.x, scanY, 10, C[6], 0.7); }
+  }
   function drawSpikes(st, e) {
     const rec = st.rec, p = rec.p, C = st.C, flash = e >= p.spikeHold - 0.05;
     for (const sp of spikeList(rec)) {
@@ -1270,6 +1393,15 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (e >= 0 && rec.shape === 'beam') drawBeam(st, e);
     if (e >= 0 && rec.shape === 'pillar') drawPillar(st, e);
     if (e >= 0 && rec.shape === 'spikes' && e < p.spikeHold) drawSpikes(st, e);
+    if (e >= 0 && rec.shape === 'quake' && e < p.quakeT) drawQuake(st, e);
+    if (e >= 0 && rec.shape === 'dash') drawDash(st, e);
+    if (e >= 0 && rec.shape === 'warp') drawWarp(st, e);
+    if (e >= 0 && rec.shape === 'meteor') {
+      // the crater glows and cools
+      const h = 1 - clamp(e / 2.4);
+      if (h > 0) for (let y = 0; y < 3; y++) { const hw = 9 - y * 2.5; line(p.x - hw, FLOOR + y, p.x + hw, FLOOR + y, h > 0.6 ? C[7] : h > 0.3 ? C[5] : C[3], h); }
+      if (h > 0) glow(p.x, FLOOR, 14, C[6], 0.5 * h);
+    }
     if (e >= 0 && rec.shape === 'wave' && e < p.waveT) drawWave(st, e);
     if (rec.shape === 'chain' && e >= -0.03) drawChain(st, e);
     if (e >= 0 && rec.shape === 'claw') {
@@ -1330,6 +1462,17 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           put(x, y, c, a);
           if (q.size > 1.3) { put(x + 1, y, C[5], a * 0.8); put(x - 1, y, C[5], a * 0.8); put(x, y + 1, C[5], a * 0.8); put(x, y - 1, C[5], a * 0.8); }
           addL(Math.floor(x), Math.floor(y), C[6], 0.3 * a);
+          break;
+        }
+        case 'star': {
+          // a spinning star whose arms twinkle as it slows and drifts down
+          const arms = p.starArms || 4, len = q.size * (0.75 + 0.25 * Math.sin(t * 10 + q.seed)) * Math.min(1, k * 3);
+          for (let a = 0; a < arms; a++) {
+            const g = q.ang + (a * TAU) / arms;
+            line(x, y, x + Math.cos(g) * len, y + Math.sin(g) * len, (v) => (v < 0.35 ? WHITE : v < 0.7 ? C[7] : C[5]), Math.min(1, k * 3));
+          }
+          put(x, y, WHITE);
+          glow(x, y, len * 2 + 2, C[6], 0.4 * k);
           break;
         }
         case 'bubble': {
@@ -1422,6 +1565,36 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         glow(cx, FLOOR, 8 + 20 * u, C[5], 0.5 * u);
         const w = 3 + 10 * u;
         line(cx - w, FLOOR + 1, cx + w, FLOOR + 1, (v) => (Math.abs(v - 0.5) < 0.15 ? C[7] : C[5]), (v) => u * (1 - Math.abs(v - 0.5) * 1.6));
+      } else if (rec.shape === 'meteor') {
+        for (let d = p.tail; d >= 0; d -= 0.5) {
+          const uu = u - d * 0.008;
+          if (uu < 0) continue;
+          const [x, y] = meteorAt(rec, uu);
+          put(x, y, d < 2 ? WHITE : d < p.tail * 0.3 ? C[7] : d < p.tail * 0.6 ? C[6] : C[4], 1 - d / p.tail);
+        }
+        const [x, y] = meteorAt(rec, u);
+        circle(x, y, p.rock + 0.8, C[6]); circle(x, y, p.rock, C[2]); circle(x - p.dir * 0.8, y - 0.8, p.rock * 0.55, C[4]);
+        put(x + p.dir * p.rock * 0.7, y + p.rock * 0.5, WHITE);
+        glow(x, y, p.rock * 4, C[6], 0.8);
+      } else if (rec.shape === 'quake') {
+        for (let k = 0; k < 7; k++) put(cx + (k - 3) * 3 + Math.sin(t * 70 + k) * u, FLOOR - 1 - Math.abs(Math.sin(t * 50 + k * 1.7)) * 1.5 * u, C[5]);
+        glow(cx, FLOOR, 10 + 10 * u, C[5], 0.4 * u);
+      } else if (rec.shape === 'dash') {
+        // crouched at the start, then a blur across the floor
+        const sx = dashStart(rec), k = clamp((t - (IMP - DASH)) / DASH), x = sx + (p.x - sx) * Math.pow(k, 0.7);
+        if (k <= 0) { figure(C, Math.round(sx) - 5, FLOOR - FH); if (u > 0.4) sparkle(Math.round(sx) + p.dir * 4, FLOOR - 16, Math.round(1 + 2 * (u - 0.4) / 0.6), C[7], C[5]); }
+        else { for (let g = 0; g < 4; g++) silhouette(Math.round(x - p.dir * g * 6) - 5, FLOOR - FH, C[6], 0.7 - g * 0.15); line(sx, FLOOR - 12, x, FLOOR - 12, C[7]); glow(x, FLOOR - 12, 12, C[6], 0.6); }
+      } else if (rec.shape === 'stars') {
+        const r = 1 + 2.5 * u, g = t * 6;
+        for (let a = 0; a < 4; a++) line(cx, cy, cx + Math.cos(g + (a * TAU) / 4) * (r + 3 * u), cy + Math.sin(g + (a * TAU) / 4) * (r + 3 * u), C[7]);
+        circle(cx, cy, r, u > 0.7 ? WHITE : C[7]);
+        glow(cx, cy, 6 + 14 * u, C[6], 0.3 + 0.5 * u);
+      } else if (rec.shape === 'warp') {
+        // a beam slams down from the sky with rings running down it
+        const tip = -2 + (FLOOR + 2) * u * u, w = 1 + u * p.warpW * 0.5;
+        for (let y = 0; y < tip; y++) for (let dx = -Math.ceil(w); dx <= Math.ceil(w); dx++) { const d = Math.abs(dx) / w; if (d <= 1) put(cx + dx, y, d < 0.35 ? WHITE : C[6], d < 0.35 ? 0.9 : 0.5); }
+        for (let k = 0; k < 3; k++) { const y = frac(t * 3 + k / 3) * tip; flatRing(cx, y, p.warpW, 0.3, false, () => C[7], 0.8, 0.2); }
+        glow(cx, tip, 10, WHITE, 0.6);
       } else if (rec.shape === 'implosion') {
         // a dark sphere collapses onto a crushed white point while rings contract
         const r = p.implR * Math.pow(1 - u, 0.8) + 1;
@@ -2113,9 +2286,157 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     glow(mx + d * 8, my, 12, WHITE, 0.6);
     glow(mx + d * p.reach * 0.5, my, p.reach * 0.5, C[5], 0.3);
   }
+
+  // a climbing arc between two rods: it strikes at their narrow foot, climbs and bows as it stretches, and snaps at the top
+  function drawLadder(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, H = p.rodH, iron = [44, 39, 56];
+    const rodX = (side, f) => cx + side * (2 + f * (p.rodGap - 2));
+    glow(cx, FLOOR, p.rodGap * 1.6, C[5], 0.25);
+    for (const side of [-1, 1]) { line(rodX(side, 0), FLOOR, rodX(side, 1), FLOOR - H, iron); line(rodX(side, 0) + side, FLOOR, rodX(side, 1) + side, FLOOR - H, mixC(iron, C[4], 0.5)); }
+    const c = frac(ph * p.m), y = FLOOR - 2 - c * H * 0.95, x0 = rodX(-1, c * 0.95), x1 = rodX(1, c * 0.95), n = 10, pts = [];
+    // it fades in as it strikes and out as it snaps, so nothing jumps when the climb starts over
+    const a = Math.min(1, c / 0.04, c > 0.9 ? 1 - (c - 0.9) / 0.1 : 1);
+    // the arc wanders smoothly, each kink on its own whole number of cycles a loop
+    for (let i = 0; i <= n; i++) {
+      const f = i / n, bow = Math.sin(Math.PI * f) * (2 + c * 7), j = i === 0 || i === n ? 0 : Math.sin(TAU * (ph * p.m * (5 + i) + rnd[i])) * 1.6;
+      pts.push([x0 + (x1 - x0) * f, y - bow + j]);
+    }
+    polyline(pts.map(([x, yy]) => [x, yy + 1]), C[5], 0.8 * a);
+    polyline(pts, c < 0.08 ? WHITE : C[7], a);
+    put(pts[n >> 1][0], pts[n >> 1][1], WHITE, a);
+    for (let i = 1; i < n; i += 3) glow(pts[i][0], pts[i][1], 6, C[6], 0.4 * a);
+    if (c < 0.08) glow(cx, FLOOR - 2, 10, WHITE, 0.8 * Math.sin((Math.PI * c) / 0.08));
+    if (c > 0.9) for (let k = 0; k < 6; k++) { const g = rnd[k + 30] * TAU, r = (c - 0.9) * 120; put(cx + Math.cos(g) * r, FLOOR - H + Math.sin(g) * r * 0.6, C[7], a); }
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m + rnd[i + 50]);
+      wisp(st, cx + (rnd[i + 90] - 0.5) * p.rodGap * u * 2, FLOOR - 2 - u * H * 1.1, u, 1 + rnd[i + 130], i);
+    }
+    arcs(st, ph, (f, a2) => [rodX(-1, rnd[(f + a2) & 255]), FLOOR - rnd[(f + a2) & 255] * H, rodX(1, rnd[(f * 3 + a2) & 255]), FLOOR - rnd[(f * 3 + a2) & 255] * H]);
+  }
+
+  // a plasma core beating inside a turning cage of bars, throwing a shock ring on every beat
+  function drawCore(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, cy = FLOOR - p.coreY, R0 = p.coreR, cageR = R0 * 2.2, cageH = R0 * 2;
+    const voidish = st.rec.mat === 'void', beat = frac(ph * p.m), swell = 1 + 0.35 * Math.max(0, 1 - beat * 4), rot = ((TAU / p.bars) * ph * p.spin);
+    const iron = [44, 39, 56], base = cy + cageH;
+    glow(cx, FLOOR, 18, C[5], 0.3);
+    line(cx - 2, base, cx - 3, FLOOR, iron); line(cx + 2, base, cx + 3, FLOOR, mixC(iron, C[4], 0.5));
+    const bars = (back) => {
+      for (let k = 0; k < p.bars; k++) {
+        const g = rot + (k * TAU) / p.bars, s = Math.sin(g);
+        if ((s < 0) !== back) continue;
+        const x = cx + Math.cos(g) * cageR;
+        line(x, cy - cageH + s * cageR * 0.3, x, base + s * cageR * 0.3, back ? iron : mixC(iron, C[5], 0.5 + 0.3 * s));
+      }
+      for (const yy of [cy - cageH, base]) flatRing(cx, yy, cageR, 0.3, back, () => (back ? iron : mixC(iron, C[5], 0.6)), 1, 0);
+    };
+    bars(true);
+    // the shock ring of this beat
+    const rr = R0 + beat * 28;
+    if (beat < 0.8) { const n = Math.ceil(rr * 6); for (let i = 0; i < n; i++) { const g = (i / n) * TAU, y = cy + Math.sin(g) * rr; if (y < FLOOR) put(cx + Math.cos(g) * rr, y, C[6], 1 - beat / 0.8); } }
+    const r = R0 * swell;
+    circle(cx, cy, r + 1, voidish ? C[6] : C[5]); circle(cx, cy, r, voidish ? C[0] : C[7]); circle(cx - r * 0.25, cy - r * 0.25, r * 0.45, voidish ? C[2] : WHITE);
+    glow(cx, cy, r * 3 + 4, C[6], 0.5 + 0.4 * Math.max(0, 1 - beat * 4));
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m + rnd[i]), g = rnd[i + 40] * TAU, d = cageR + u * 10;
+      wisp(st, cx + Math.cos(g) * d, cy + Math.sin(g) * d * 0.7 - u * 4, u, 0.8 + rnd[i + 80], i);
+    }
+    bars(false);
+    arcs(st, ph, (f, a) => { const g = rot + Math.floor(rnd[(f * 3 + a) & 255] * p.bars) * (TAU / p.bars); return [cx, cy, cx + Math.cos(g) * cageR, cy + (rnd[(f * 5 + a) & 255] - 0.5) * cageH * 1.6]; });
+  }
+
+  // a pool on the floor: drops fall in at their own moments and rings spread across the surface
+  function drawPool(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, cy = FLOOR + 6, rx = p.poolR, ry = rx * 0.2;
+    const inPool = (x, y) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+    for (let sy = Math.floor(cy - ry); sy <= Math.ceil(cy + ry); sy++) {
+      const f = (sy + 0.5 - cy) / ry, hw = rx * Math.sqrt(Math.max(0, 1 - f * f));
+      for (let sx = Math.ceil(cx - hw); sx <= Math.floor(cx + hw); sx++) put(sx, sy, Math.sin(sx * 0.5 + sy * 3 + TAU * ph * p.m * 2) > 0.9 ? C[4] : C[1], 0.9);
+    }
+    flatRing(cx, cy, rx, 0.2, true, () => C[3], 1, 0);
+    for (let k = 0; k < p.drops; k++) {
+      const tk = (k + rnd[k + 10] * 0.6) / p.drops, dx = (rnd[k + 20] - 0.5) * rx * 1.2, dy = (rnd[k + 30] - 0.5) * ry, hx = cx + dx, hy = cy + dy;
+      const pre = frac(tk - ph), age = frac(ph - tk);
+      // the drop falling in, as the material
+      if (pre < 0.15) { const q = pre / 0.15; wisp(st, hx, hy - q * 40, 0.15, 1.4, k); }
+      // two rings spread from where it landed; only the parts on the water show
+      for (const lag of [0, 0.12]) {
+        const a = age - lag;
+        if (a < 0 || a > 0.6) continue;
+        const r = 1 + (a / 0.6) * rx * 0.8, n = Math.ceil(r * 6);
+        for (let i = 0; i < n; i++) { const g = (i / n) * TAU, x = hx + Math.cos(g) * r, y = hy + Math.sin(g) * r * 0.2; if (inPool(x, y)) put(x, y, lag ? C[5] : C[7], 1 - a / 0.6); }
+      }
+      if (age < 0.08) { const h = Math.sin((Math.PI * age) / 0.08) * 4; put(hx - 1, hy - h, C[7]); put(hx + 1, hy - h, C[7]); put(hx, hy - h * 1.4, WHITE); glow(hx, hy, 8, C[6], 0.6); }
+    }
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m + rnd[i + 60]);
+      wisp(st, cx + (rnd[i + 100] - 0.5) * rx * 1.6, cy - 1 - u * 18, u, 1 + rnd[i + 140], i);
+    }
+    flatRing(cx, cy, rx, 0.2, false, () => C[4], 1, 0.15);
+    arcs(st, ph, (f, a) => [cx + (rnd[(f * 3 + a) & 255] - 0.5) * rx * 1.6, cy, cx + (rnd[(f * 5 + a) & 255] - 0.5) * rx * 1.6, cy - 10]);
+    glow(cx, cy, rx * 0.8, C[5], 0.3);
+  }
+
+  // a scanner: brackets lock onto the figure and a line sweeps head to toe, leaving an outline that cools
+  function drawScan(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, L = cx - 5, T = FLOOR - FH, s = frac(ph * p.m), scanY = T - 2 + s * (FH + 3);
+    glow(cx, FLOOR, 16, C[5], 0.25);
+    figure(C, L, T);
+    // each outline pixel lights as the line passes and cools until the next pass
+    for (const [x, y] of FIGI.ink) {
+      const age = frac(s - (y + 2) / (FH + 3));
+      if (age < 0.7) put(L + x, T + y, age < 0.1 ? WHITE : age < 0.3 ? C[7] : age < 0.5 ? C[6] : C[4], 1 - age / 0.7);
+    }
+    const env = Math.min(1, s / 0.06, (1 - s) / 0.06);
+    line(L - 4, scanY, L + FW + 3, scanY, WHITE, env);
+    put(L - 5, scanY, C[6], env); put(L + FW + 4, scanY, C[6], env);
+    glow(cx, scanY, 12, C[6], 0.6 * env);
+    // corner brackets breathe in and out
+    const b = p.brackets + Math.sin(TAU * ph * p.m) * 1.5, x0 = L - 4, x1 = L + FW + 3, y0 = T - 3, y1 = FLOOR - 1;
+    for (const [x, y, sx, sy] of [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]) { line(x, y, x + sx * b, y, C[6]); line(x, y, x, y + sy * b, C[6]); }
+    // a readout bar fills beside the figure and empties as the line restarts
+    const bx = p.dir > 0 ? x1 + 4 : x0 - 6;
+    for (let i = 0; i < 6; i++) put(bx + i * (p.dir > 0 ? 1 : 1), FLOOR - 4, i / 6 < s ? C[7] : C[3]);
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i]), side = rnd[i + 30] < 0.5 ? x0 : x1, born = T - 2 + frac(s - u / 2) * (FH + 3);
+      wisp(st, side + (side === x0 ? -1 : 1) * u * 6, born - u * 8, u, 0.8 + rnd[i + 60] * 0.8, i);
+    }
+    if (env > 0.5) arcs(st, ph, (f, a) => [x0, scanY, x1, scanY + (rnd[(f * 3 + a) & 255] - 0.5) * 6]);
+  }
+
+  // a cascade: the material pours over a rock lip in strands, crashing into foam and mist at the floor
+  function drawCascade(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, top = p.lipY, rock = [50, 44, 64];
+    glow(cx, FLOOR, p.fallW * 3, C[5], 0.35);
+    poly([[cx - p.fallW - 10, top - 6], [cx + p.fallW + 10, top - 6], [cx + p.fallW + 6, top + 2], [cx - p.fallW - 6, top + 2]], rock);
+    line(cx - p.fallW - 10, top - 6, cx + p.fallW + 10, top - 6, mixC(rock, C[4], 0.5));
+    for (let y = top; y < FLOOR; y++) {
+      const f = (y - top) / (FLOOR - top), w = p.fallW * (1 + f * 0.4);
+      for (let dx = -Math.floor(w); dx <= Math.floor(w); dx++) {
+        // strands slide down, each column at its own offset
+        const v = frac(y * 0.07 - ph * p.m * 3 + rnd[(dx + 40) & 255]), edge = Math.abs(dx) > w - 1.2;
+        put(cx + dx, y, edge ? C[4] : v < 0.12 ? C[7] : v < 0.45 ? C[6] : C[5], edge ? 0.7 : 0.9);
+      }
+      if (y % 5 === 0) addL(cx, y, C[6], 0.2);
+    }
+    // the curl at the lip
+    line(cx - p.fallW, top, cx + p.fallW, top, WHITE);
+    for (let i = 0; i < p.tongues * 2; i++) {
+      const u = frac(ph * p.m * 2 + rnd[(i + 100) & 255]), x = cx + (rnd[(i + 140) & 255] - 0.5) * p.fallW * 3, y = FLOOR - 2 - u * 12;
+      wisp(st, x, y, u, 1.2 + rnd[(i + 180) & 255] * 1.5, i);
+    }
+    for (let i = 0; i < p.motes / 2; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i]), side = rnd[i + 20] < 0.5 ? -1 : 1, reach = side * (6 + rnd[i + 60] * 12);
+      put(cx + side * p.fallW + reach * u, FLOOR - 4 - 10 * u + 14 * u * u, C[7], 1 - u);
+    }
+    for (const back of [true, false]) for (let k = 0; k < 2; k++) { const r = p.fallW * (1 + 1.4 * frac(ph * p.m + k / 2)); flatRing(cx, FLOOR, r, 0.25, back, () => C[6], 1 - frac(ph * p.m + k / 2), 0.2); }
+    arcs(st, ph, (f, a) => [cx + (rnd[(f * 3 + a) & 255] - 0.5) * p.fallW * 2, top + rnd[(f * 5 + a) & 255] * (FLOOR - top) * 0.5, cx + (rnd[(f * 7 + a) & 255] - 0.5) * p.fallW * 2, FLOOR - 2]);
+    glow(cx, FLOOR - 4, p.fallW * 2, WHITE, 0.25);
+  }
   const LOOP_DRAW = {
     aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune, torch: drawTorch, orb: drawOrb, shield: drawShield, missile: drawMissile,
     fountain: drawFountain, cloud: drawCloud, beacon: drawBeacon, swarm: drawSwarm, breath: drawBreath,
+    ladder: drawLadder, core: drawCore, pool: drawPool, scan: drawScan, cascade: drawCascade,
   };
 
   function composite(view, img) {
@@ -2343,7 +2664,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 
   // ---------------------------------------------------------------- the page
   // new effects come from the newest generation, which also holds every earlier shape and material
-  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return GEN2 + 1 + a[0]; };
+  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return GEN3 + 1 + a[0]; };
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const off = document.createElement('canvas'); off.width = W; off.height = H;
   const octx = off.getContext('2d'), img = octx.createImageData(W, H);
@@ -2446,10 +2767,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const rec = pl.rec;
     if (rec.loop) return `Loop · repeats every ${rec.p.period} s with no seam`;
     const W0 = rec.p.wind, e = s - W0, tail = sustain(rec);
-    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor', implosion: 'Anticipation · everything is pulled in', firework: 'Anticipation · the shell climbs', spikes: 'Anticipation · a line races along the floor', wave: 'Anticipation · the floor swells', chain: 'Anticipation · a charge builds in the hand', claw: 'Anticipation · a glint, then the claws rake' }[rec.shape];
+    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor', implosion: 'Anticipation · everything is pulled in', firework: 'Anticipation · the shell climbs', spikes: 'Anticipation · a line races along the floor', wave: 'Anticipation · the floor swells', chain: 'Anticipation · a charge builds in the hand', claw: 'Anticipation · a glint, then the claws rake', meteor: 'Anticipation · a burning rock streaks in', quake: 'Anticipation · the ground rumbles', dash: 'Anticipation · a crouch, then a blur', stars: 'Anticipation · light gathers and turns', warp: 'Anticipation · a beam slams down' }[rec.shape];
     if (S.hitstop && pl.tt < W0 + rec.p.stop) return 'Contact · hit-stop and white hero frame';
     if (e < 0.15) return 'Release · flare, rings, burst';
-    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : rec.shape === 'wave' ? 'Release · the wave rolls across the floor' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
+    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : rec.shape === 'wave' ? 'Release · the wave rolls across the floor' : rec.shape === 'quake' ? 'Release · shock fronts run out along the floor' : rec.shape === 'warp' ? 'Release · the scan paints the figure in' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
     if (e < 2.2 + tail) return 'Hold · embers drift, light fades';
     if (e < 3.2 + tail) return 'Decay · the last of it clears';
     return 'Empty · a one-shot ends with nothing left';
@@ -2538,6 +2859,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   $('auto').addEventListener('change', (e) => { S.auto = e.target.checked; });
   $('gen').addEventListener('click', () => { generate(); S.playing = true; setPlayLabel(); });
   $('vary').addEventListener('click', () => { load(vary(main.rec, randomSeed())); S.playing = true; setPlayLabel(); });
+  // the editor starts open; a viewer who folds it away finds it folded next time
+  try { if (localStorage.getItem('pfx-edit-open') === '0') $('edit-box').open = false; } catch (e) { /* storage blocked: keep it open */ }
+  $('edit-box').addEventListener('toggle', () => { try { localStorage.setItem('pfx-edit-open', $('edit-box').open ? '1' : '0'); } catch (e) { /* not remembered */ } });
+  $('edit-btn').addEventListener('click', () => {
+    $('edit-box').open = true;
+    $('edit-box').scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+    $('ed-shape').focus({ preventScroll: true });
+  });
   $('back').addEventListener('click', () => { const h = history.pop(); if (h) load(h.base, false, h.edits); });
   $('ed-shape').addEventListener('change', (e) => {
     const shape = e.target.value, { p } = editBase(base, { ...edits, shape });
