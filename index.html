@@ -37,6 +37,7 @@ body {
 .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
 header { display: flex; flex-direction: column; gap: 10px; }
 .top-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.langs { --seg-bg: var(--bg); }
 .langs label { font-size: 13px; padding: 3px 9px; }
 /* CJK falls back to system fonts that have the characters; Japanese headings get a pixel face */
 :root:lang(ja) { --display: "Silkscreen", "DotGothic16", "Hiragino Kaku Gothic ProN", monospace; --body: "Atkinson Hyperlegible", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif; }
@@ -58,21 +59,33 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--panel-2); 
 .titlebar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; padding: 12px 12px 10px; }
 .name { font-family: var(--display); font-size: clamp(18px, 3.4vw, 24px); line-height: 1.2; text-wrap: balance; }
 .seedbox { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.seedbox label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
 .seedbox input { width: 12ch; font: inherit; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 4px 6px; }
 .screen { position: relative; background: #000; line-height: 0; }
 #fx { width: 100%; max-width: 100%; aspect-ratio: 160 / 96; image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
-.hud { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; line-height: 1.3; }
+.hud { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; pointer-events: none; line-height: 1.3; }
+#clock { flex: none; white-space: nowrap; }
 .hud span { font-family: var(--mono); font-size: 12px; color: #e9e3f2; background: rgba(10, 8, 16, .72); padding: 4px 8px; }
 #phase { max-width: 70%; }
+/* transport: the actions on the left; play and the scrubber stay together and take the rest, or a row of their own */
 .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
-.transport input[type=range] { flex: 1 1 160px; min-width: 0; accent-color: var(--accent); }
-.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 20px; padding: 14px 12px 16px; border-top: 1px solid var(--line); }
+.actions { display: flex; gap: 8px; }
+.playback { display: flex; align-items: center; gap: 10px; flex: 1 1 240px; min-width: 0; }
+.transport input[type=range] { flex: 1 1 auto; min-width: 0; accent-color: var(--accent); }
+/* controls: three equal columns; the two wide switches span two of them, so every row is full (2+1, 2+1, 1+1+1) */
+.controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 20px; padding: 14px 12px 16px; border-top: 1px solid var(--line); }
+.controls .span2 { grid-column: span 2; }
 .group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .group > .lbl { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
-.seg { display: flex; flex-wrap: wrap; border: 1px solid var(--line); width: fit-content; max-width: 100%; }
+/* segmented switches: hairline gaps over the line colour draw the dividers, so a wrapped switch stays a tidy grid */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 1px; background: var(--line); border: 1px solid var(--line); width: fit-content; max-width: 100%; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
-.seg label { font-size: 14px; padding: 5px 11px; cursor: pointer; color: var(--muted); border-right: 1px solid var(--line); user-select: none; }
-.seg label:last-of-type { border-right: 0; }
+.seg label { font-size: 14px; padding: 5px 11px; cursor: pointer; color: var(--muted); background: var(--seg-bg, var(--panel)); text-align: center; white-space: nowrap; user-select: none; }
+.seg label:hover { color: var(--fg); }
+.seg.fill { display: flex; flex-wrap: nowrap; width: 100%; }
+.seg.fill label { flex: 1 1 auto; }
+.seg.kinds { --cols: 3; }
+.seg.looks { --cols: 2; }
 .seg input:checked + label { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 .seg input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: -2px; }
 .checks { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
@@ -84,13 +97,16 @@ button.primary { background: var(--accent); color: var(--accent-ink); border-col
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .45; cursor: default; }
 .badge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; background: var(--accent); color: var(--accent-ink); padding: 1px 6px; }
-.edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 20px; }
+/* the editor: shape and material, then hue and saturation, two by two; the palette; then the shape's own settings */
+.edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
 .edit-grid .wide { grid-column: 1 / -1; }
-.edit-grid select { font: inherit; font-size: 14px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 5px 8px; max-width: 100%; }
+.edit-grid select { font: inherit; font-size: 14px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); padding: 5px 8px; width: 100%; }
 .edit-grid input[type=range] { width: 100%; accent-color: var(--accent); }
-.edit-grid .num-in { font-family: var(--mono); font-size: 14px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 5px 8px; width: 10ch; }
+.edit-grid .num-in { font-family: var(--mono); font-size: 14px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); padding: 5px 8px; width: 100%; max-width: 14ch; }
 .edit-grid output { color: var(--fg); text-transform: none; letter-spacing: 0; margin-left: 4px; }
-.knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 20px; }
+.knobs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 20px; align-items: end; padding-top: 14px; border-top: 1px solid var(--line); }
+.edit-grid .edit-row { padding-top: 12px; border-top: 1px solid var(--line); }
+#ed-pal-note { max-width: 65ch; }
 .swatches { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border: 1px solid var(--line); }
 .swatches input { width: 100%; height: 32px; padding: 0; border: 0; border-right: 1px solid var(--line); background: none; cursor: pointer; display: block; }
 .swatches input:last-child { border-right: 0; }
@@ -116,7 +132,7 @@ details.edit .edit-grid { padding: 2px 12px 14px; }
 /* variations */
 .thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .thumb { display: flex; flex-direction: column; gap: 6px; padding: 0; background: none; border: 0; text-align: left; white-space: normal; color: var(--fg); min-width: 0; }
-.thumb canvas { width: 100%; max-width: 100%; aspect-ratio: 160 / 96; image-rendering: pixelated; image-rendering: crisp-edges; display: block; border: 1px solid var(--line); }
+.thumb canvas { box-sizing: border-box; width: 100%; max-width: 100%; aspect-ratio: 160 / 96; image-rendering: pixelated; image-rendering: crisp-edges; display: block; border: 1px solid var(--line); }
 .thumb:hover canvas { border-color: var(--accent); }
 .thumb span { font-size: 13px; line-height: 1.3; }
 .thumb small { font-family: var(--mono); font-size: 11px; color: var(--muted); }
@@ -148,6 +164,35 @@ ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
 .sources { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
 footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
 
+@media (max-width: 820px) {
+  .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* two columns: the wide switches and the checkboxes take whole rows, the four small switches pair up */
+  .controls .span2, .controls .when { grid-column: 1 / -1; }
+  .controls .when .checks { flex-direction: row; flex-wrap: wrap; gap: 6px 20px; }
+  .controls.export .group:nth-child(3) { grid-column: 1 / -1; }
+  .knobs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .seg label { padding-inline: 8px; }
+}
+@media (max-width: 520px) {
+  .controls, .edit-grid, .knobs { grid-template-columns: minmax(0, 1fr); }
+  .controls.export .group:nth-child(3) { grid-column: auto; }
+  /* a wide switch that no longer fits wraps as an even grid: 3 + 3, 2 + 2 */
+  .seg.fill { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); }
+  .seg.fill label { padding-inline: 6px; }
+  /* the four actions share one row in equal parts, with play and the scrubber on the next */
+  .actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .actions button { padding-inline: 4px; }
+}
+@media (max-width: 520px) {
+  /* Japanese labels run longer: pair the actions up a little sooner */
+  :root:lang(ja) .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+  .seg.kinds { --cols: 2; }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 600px) {
   .note { grid-template-columns: minmax(0, 1fr); }
   .hud span { font-size: 11px; }
@@ -185,16 +230,20 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <div class="hud"><span id="phase">Anticipation</span><span id="clock">t 0.00 s</span></div>
     </div>
     <div class="transport">
-      <button id="gen" class="primary" type="button">Generate</button>
-      <button id="vary" type="button">Variation</button>
-      <button id="edit-btn" type="button" aria-controls="edit-box">Edit</button>
-      <button id="back" type="button" disabled>Previous</button>
-      <button id="play" type="button">Pause</button>
-      <input id="scrub" type="range" min="0" max="5" step="0.005" value="0" aria-label="Scrub time">
+      <div class="actions">
+        <button id="gen" class="primary" type="button">Generate</button>
+        <button id="vary" type="button">Variation</button>
+        <button id="edit-btn" type="button" aria-controls="edit-box">Edit</button>
+        <button id="back" type="button" disabled>Previous</button>
+      </div>
+      <div class="playback">
+        <button id="play" type="button">Pause</button>
+        <input id="scrub" type="range" min="0" max="5" step="0.005" value="0" aria-label="Scrub time">
+      </div>
     </div>
     <div class="controls">
-      <div class="group"><span class="lbl">Generate</span>
-        <div class="seg" role="radiogroup" aria-label="Kind of effect to generate">
+      <div class="group span2"><span class="lbl">Generate</span>
+        <div class="seg fill kinds" role="radiogroup" aria-label="Kind of effect to generate">
           <input type="radio" name="kind" id="kind-any" value="any" checked><label for="kind-any">Any</label>
           <input type="radio" name="kind" id="kind-shot" value="shot"><label for="kind-shot">One-shots</label>
           <input type="radio" name="kind" id="kind-loop" value="loop"><label for="kind-loop">Loops</label>
@@ -202,11 +251,18 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <input type="radio" name="kind" id="kind-transition" value="transition"><label for="kind-transition">Transitions</label>
           <input type="radio" name="kind" id="kind-critter" value="critter"><label for="kind-critter">Critters</label>
         </div></div>
-      <div class="group"><span class="lbl">When generating</span>
+      <div class="group when"><span class="lbl">When generating</span>
         <div class="checks">
           <label><input type="checkbox" id="keep-pal"> <span>Keep this palette</span></label>
           <label><input type="checkbox" id="keep-shape"> <span>Keep this shape and timing</span></label>
           <label><input type="checkbox" id="auto"> <span>New effect after each play</span></label>
+        </div></div>
+      <div class="group span2"><span class="lbl">Look</span>
+        <div class="seg fill looks" role="radiogroup" aria-label="Look">
+          <input type="radio" name="look" id="look-pixel" value="pixel" checked><label for="look-pixel">Pixel</label>
+          <input type="radio" name="look" id="look-cel" value="cel"><label for="look-cel">Cel outline</label>
+          <input type="radio" name="look" id="look-handheld" value="handheld"><label for="look-handheld">Handheld</label>
+          <input type="radio" name="look" id="look-ink" value="ink"><label for="look-ink">Ink sketch</label>
         </div></div>
       <div class="group"><span class="lbl">View buffer</span>
         <div class="seg" role="radiogroup" aria-label="View buffer">
@@ -228,13 +284,6 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         <div class="seg" role="radiogroup" aria-label="Speed">
           <input type="radio" name="speed" id="speed-1" value="1" checked><label for="speed-1">1×</label>
           <input type="radio" name="speed" id="speed-q" value="0.25"><label for="speed-q">¼×</label>
-        </div></div>
-      <div class="group"><span class="lbl">Look</span>
-        <div class="seg" role="radiogroup" aria-label="Look">
-          <input type="radio" name="look" id="look-pixel" value="pixel" checked><label for="look-pixel">Pixel</label>
-          <input type="radio" name="look" id="look-cel" value="cel"><label for="look-cel">Cel outline</label>
-          <input type="radio" name="look" id="look-handheld" value="handheld"><label for="look-handheld">Handheld</label>
-          <input type="radio" name="look" id="look-ink" value="ink"><label for="look-ink">Ink sketch</label>
         </div></div>
     </div>
     <details class="recipe edit" id="edit-box" open>
