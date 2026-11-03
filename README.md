@@ -1,22 +1,41 @@
 # pixelfx-generator
 
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
-2.1 billion of them. Its shape, material, timing and palette all come from that one number.
+4.3 billion of them. Its shape, material, timing and palette all come from that one number.
 
 Open `index.html` in a browser. There is no build step and nothing to install. The page loads its fonts from Google
 Fonts and runs everything else inline.
 
 ## What it makes
 
-**45 effect types**: 9 shapes × 5 materials, each with its own range of variations.
+**128 effect types**: 16 shapes × 8 materials, each with its own range of variations.
 
 | | Shapes |
 |---|---|
-| One-shots | strike, slam, nova, eruption, shatter |
-| Seamless loops | aura, portal, vortex, sigil |
+| One-shots | strike, slam, nova, eruption, shatter, slash, beam, pillar |
+| Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile |
 
-Materials are **flame**, **frost**, **storm**, **dust** and **void**. They change what the effect throws off: fire
-that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds, or dark puffs with bright rims.
+Materials are **flame**, **frost**, **storm**, **dust**, **void**, **poison**, **holy** and **water**. They change
+what the effect throws off: fire that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds,
+dark puffs with bright rims, bubbles that swell and pop, pulsing glints, or drops that splash on the floor.
+
+The newer shapes:
+
+- **Slash**: a glint, then a crescent sweeps in a few hundredths of a second, flashes white, cools and comes apart
+  from its tail, throwing sparks off its path.
+- **Beam**: energy gathers at a muzzle, then a rippling beam pours into the hit for up to a second, spraying sparks
+  back, and gives out as a dotted line.
+- **Pillar**: a mark lights on the floor under a dotted guide line, then a column slams down from the sky and draws
+  back up.
+- **Brazier**, **orb**, **ward** and **missile** loops: a flame bowl on legs, a turning crystal in rings, a glass
+  dome that takes hits, and a projectile in flight.
+
+### Two generations of seeds
+
+Seeds are shareable, so adding shapes must not change old ones. Seeds 1 to 2,147,483,647 are the first generation:
+they only know the first nine shapes and five materials and play exactly as they always did. Seeds 2,147,483,648 to
+4,294,967,295 are the second generation and draw from all sixteen shapes and eight materials. Generate and the
+variations strip pick second-generation seeds; first-generation seeds still open from a link or the seed box.
 
 Each seed also builds its own eight-step palette. Lightness climbs from near black to near white, saturation peaks
 in the middle, and the hue leans toward yellow in the highlights.
@@ -30,7 +49,25 @@ in the middle, and the hue leans toward yellow in the highlights.
 - Type a seed, or share the link: it ends in `#s` plus the seed and reopens the same effect.
 - Copy the recipe as JSON.
 - Switch off the light buffer, the dither or the hit-stop to see what each one does.
+- Edit the effect by hand: shape, material, palette and timing.
 - Export the effect as a sprite sheet with frame data, or as a GIF.
+
+## Editing
+
+Open **Edit this effect** under the controls to change the current effect without leaving its seed:
+
+- **Shape** and **material**: any of the 16 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
+  from the seed; a new material keeps the shape's numbers and only refreshes the ones the material decides (puffs,
+  smoke, embers, lightning and so on).
+- **Palette**: turn the hue, scale the saturation, or pick any of the eight colours directly.
+- **Knobs** for the shape in hand: position, size, particle count, and for one-shots the wind-up, pour time, spark
+  speed, gravity, hit-stop, screen shake and facing; for loops the loop length, cycles per loop and spin. Loops stay
+  seamless whatever the settings.
+
+Edits are stored after the seed in the link, for example `#s20482~hue:60,shape:beam,size:1.4`, so an edited effect
+can be shared and reopens exactly. A plain `#s` link still opens the seed as it is. The recipe JSON and the exports
+include the edits, and exported files get `-edited` in their name. **Reset to the seed** clears them, and
+**Generate** starts fresh.
 
 ## Exporting
 

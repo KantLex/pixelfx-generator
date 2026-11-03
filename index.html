@@ -77,6 +77,19 @@ button:hover { border-color: var(--muted); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .45; cursor: default; }
+details.edit summary { display: flex; align-items: center; gap: 8px; }
+.badge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; background: var(--accent); color: var(--accent-ink); padding: 1px 6px; }
+.edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 20px; }
+.edit-grid .wide { grid-column: 1 / -1; }
+.edit-grid select { font: inherit; font-size: 14px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 5px 8px; max-width: 100%; }
+.edit-grid input[type=range] { width: 100%; accent-color: var(--accent); }
+.edit-grid output { color: var(--fg); text-transform: none; letter-spacing: 0; margin-left: 4px; }
+.knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 20px; }
+.swatches { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border: 1px solid var(--line); }
+.swatches input { width: 100%; height: 32px; padding: 0; border: 0; border-right: 1px solid var(--line); background: none; cursor: pointer; display: block; }
+.swatches input:last-child { border-right: 0; }
+.swatches input.set { outline: 2px solid var(--fg); outline-offset: -4px; }
+.edit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .export-go { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; }
 .export-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
 details.recipe { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
@@ -195,6 +208,18 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <input type="radio" name="speed" id="speed-q" value="0.25"><label for="speed-q">¼×</label>
         </div></div>
     </div>
+    <details class="recipe edit" id="edit-box">
+      <summary>Edit this effect <span class="badge" id="edited" hidden>edited</span></summary>
+      <div class="edit-grid">
+        <div class="group"><label class="lbl" for="ed-shape">Shape</label><select id="ed-shape"></select></div>
+        <div class="group"><label class="lbl" for="ed-mat">Material</label><select id="ed-mat"></select></div>
+        <div class="group"><label class="lbl" for="ed-hue">Hue <output id="ed-hue-v"></output></label><input type="range" id="ed-hue" min="-180" max="180" step="5"></div>
+        <div class="group"><label class="lbl" for="ed-sat">Saturation <output id="ed-sat-v"></output></label><input type="range" id="ed-sat" min="0" max="1.6" step="0.05"></div>
+        <div class="group wide"><span class="lbl">Palette, dark to bright</span><div class="swatches" id="ed-swatches"></div></div>
+        <div class="knobs wide" id="ed-knobs"></div>
+        <div class="wide edit-row"><button id="ed-reset" type="button">Reset to the seed</button> <span class="caption">Edits ride along in the link, the recipe and the exports.</span></div>
+      </div>
+    </details>
     <div class="controls export" role="group" aria-label="Export">
       <div class="group"><span class="lbl">Export frame rate</span>
         <div class="seg" role="radiogroup" aria-label="Export frame rate">
@@ -239,7 +264,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <button id="more" type="button">Six more</button>
     </div>
     <div class="thumbs" id="thumbs"></div>
-    <p class="caption">Select one to open it above. The link on this page ends in <code>#s</code> plus the seed, so a copied link reopens the same effect.</p>
+    <p class="caption">Select one to open it above. The link on this page ends in <code>#s</code> plus the seed, and any edits after a <code>~</code>, so a copied link reopens the same effect.</p>
   </section>
 
   <section aria-labelledby="gen-h">
@@ -248,7 +273,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <div class="note">
         <h3>One seed, one recipe</h3>
         <div>
-          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void), then set about 25 numbers for that shape. There are five one-shot shapes (strike, slam, nova, eruption, shatter) and four loops (aura, portal, vortex, sigil), so 9 shapes × 5 materials makes <strong>45 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
+          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are eight one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar) and eight loops (aura, portal, vortex, sigil, brazier, orb, ward, missile), so 16 shapes × 8 materials makes <strong>128 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
+          <p>Seeds come in two generations. Seeds up to 2,147,483,647 are the first: they only know the first nine shapes and five materials, and they play exactly as they always have, so old links still work. Seeds above that, up to 4,294,967,295, are the second generation and draw from everything. Generate picks from the second.</p>
         </div>
       </div>
       <div class="note">
@@ -260,6 +286,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
             <li><strong>Portal</strong>: a floating oval whose interior is a per-pixel swirl picked from the ramp in steps, with a rim highlight that chases around it and motes spiralling in.</li>
             <li><strong>Vortex</strong>: dashed rings that rise, widen and spin, with material wisps climbing the funnel.</li>
             <li><strong>Sigil</strong>: a flat rune circle with turning glyphs, a star, rising motes and a hovering orb.</li>
+            <li><strong>Brazier</strong>: an iron bowl on three legs with flickering coals and a swaying flame body, its material pouring off the top.</li>
+            <li><strong>Orb</strong>: a floating crystal that turns one facet per loop inside tilted rings, shedding its material.</li>
+            <li><strong>Ward</strong>: a glass dome of plates over a figure, a band of light climbing it, and shots from one side that glance off in ripples and sparks.</li>
+            <li><strong>Missile</strong>: a ball or a faceted lance in flight, held in place while its trail, sparks and speed lines stream past.</li>
           </ul>
         </div>
       </div>
@@ -287,8 +317,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <table>
         <thead><tr><th scope="col"></th><th scope="col">PixelFX</th><th scope="col">This generator</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 2.1 billion seeds gives a different effect</td></tr>
-          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>45 types: 5 one-shot shapes and 4 loops, each in 5 materials, with the numbers varied inside each. No UI, weather, transitions or critters</td></tr>
+          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 4.3 billion seeds gives a different effect</td></tr>
+          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>128 types: 8 one-shot shapes and 8 loops, each in 8 materials, with the numbers varied inside each. No UI, weather, transitions or critters</td></tr>
           <tr><th scope="row">Palettes</th><td>A curated ramp per effect, which callers can swap</td><td>A new hue-shifted ramp per seed, which can be locked while the shape changes</td></tr>
           <tr><th scope="row">Characters</th><td>A 3D-skeleton fighter with wind-ups, hit reactions and a target dummy</td><td>None</td></tr>
           <tr><th scope="row">Quality</th><td>Each effect held to a written quality bar and benchmarked against references</td><td>Uneven. Guard rails keep results readable, but nobody has reviewed a given seed</td></tr>
@@ -306,6 +336,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <li>Locks and a Variation button, so you can keep what you like and change the rest.</li>
       <li>Six live variations at once, and an option to play a new effect after each one.</li>
       <li>Export as a sprite sheet with frame data, or as a GIF.</li>
+      <li>A second generation of seeds with three more one-shots (slash, beam, pillar), four more loops (brazier, orb, ward, missile) and three more materials: poison bubbles that swell and pop, holy glints, and water drops that splash on the floor.</li>
     </ul>
   </section>
 
@@ -531,8 +562,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const NOUN = { strike: 'Strike', slam: 'Slam', nova: 'Nova', geyser: 'Eruption', shatter: 'Shatter' };
   const ADJ = { flame: 'Burning', frost: 'Frozen', storm: 'Charged', dust: 'Earthen', void: 'Hollow' };
 
-  function makeShape(R) {
-    const shape = R.pick(SHAPES), mat = R.pick(MATS), ground = shape !== 'nova';
+  // shapes whose contact happens in the air, like a nova: round rings, sparks all round, nothing on the floor
+  const AIR = ['slash', 'beam'];
+  // the second generation passes its own shape and material; the first draws them here, in this order
+  function makeShape(R, shape = R.pick(SHAPES), mat = R.pick(MATS)) {
+    const ground = shape !== 'nova' && !AIR.includes(shape);
     const p = {
       x: Math.round(R.range(62, 100)), dir: R() < 0.5 ? 1 : -1, arc: R.range(-1, 1),
       alt: shape === 'nova' ? Math.round(R.range(16, 32)) : 0,
@@ -550,8 +584,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   const LOOPS = ['aura', 'portal', 'vortex', 'rune'];
   Object.assign(NOUN, { aura: 'Aura', portal: 'Portal', vortex: 'Vortex', rune: 'Sigil' });
-  function makeLoop(L) {
-    const shape = L.pick(LOOPS), mat = L.pick(MATS);
+  function makeLoop(L, shape = L.pick(LOOPS), mat = L.pick(MATS)) {
     const p = {
       x: Math.round(L.range(66, 94)), period: L.pick([1.5, 2, 2.5, 3]), m: L.pick([1, 1, 2]), spin: L.pick([1, -1]),
       tongues: L.int(6, 16), orbit: L.int(2, 7), orbitR: L.range(12, 18), wave: L.range(0.25, 0.55),
@@ -564,13 +597,51 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (shape === 'rune') p.period = L.pick([4, 5, 6]);
     return { shape, mat, p };
   }
+  // the second generation: new shapes and materials. The first generation never picks them, so its seeds keep their effects.
+  const SHAPES2 = ['slash', 'beam', 'pillar'], LOOPS2 = ['torch', 'orb', 'shield', 'missile'], MATS2 = ['poison', 'holy', 'water'];
+  Object.assign(NOUN, { slash: 'Slash', beam: 'Beam', pillar: 'Pillar', torch: 'Brazier', orb: 'Orb', shield: 'Ward', missile: 'Missile' });
+  Object.assign(ADJ, { poison: 'Toxic', holy: 'Radiant', water: 'Tidal' });
+  const ALL_SHOTS = [...SHAPES, ...SHAPES2], ALL_LOOPS = [...LOOPS, ...LOOPS2], ALL_MATS = [...MATS, ...MATS2];
+  // seeds up to GEN1 are the first generation; above it, up to MAX_SEED, the second
+  const GEN1 = 2147483647, MAX_SEED = 4294967295;
+  // numbers only the new shapes use, drawn after the shared ones
+  function extraShape(R, shape, p) {
+    if (shape === 'slash') Object.assign(p, {
+      alt: Math.round(R.range(16, 28)), wind: R.range(0.24, 0.42), slashR: R.range(18, 30), slashFlat: R.range(0.35, 0.8),
+      slashTilt: R.range(-0.4, 0.4), slashArc: R.range(2.3, 3.6), slashW: R.range(3.5, 6.5),
+      // the blade itself is the flash: no shock ring or star of rays
+      rings: 0, rays: 0,
+    });
+    if (shape === 'beam') Object.assign(p, {
+      alt: Math.round(R.range(10, 28)), beam: R.range(0.5, 1.1), beamW: R.range(1.8, 4), beamLen: R.range(56, 84), wind: R.range(0.45, 0.8),
+    });
+    if (shape === 'pillar') Object.assign(p, { colW: R.range(3, 7), hold: R.range(0.25, 0.6), rings: Math.max(1, p.rings) });
+    return p;
+  }
+  function extraLoop(L, shape, p) {
+    if (shape === 'torch') Object.assign(p, { bowl: L.range(7, 11), stand: Math.round(L.range(6, 14)), flameH: L.range(20, 32) });
+    if (shape === 'orb') Object.assign(p, { oy: L.range(22, 34), os: L.range(6, 9), facets: L.int(4, 7), rings2: L.int(1, 2), ringTilt: L.range(-0.6, 0.6) });
+    if (shape === 'shield') Object.assign(p, { dr: L.range(22, 32), dh: L.range(20, 30), hits: L.int(1, 3), plates: L.int(5, 8), dir: L.pick([1, -1]) });
+    if (shape === 'missile') Object.assign(p, { alt: L.range(18, 40), head: L.range(2.4, 4.2), trail: L.range(34, 64), lance: L() < 0.4, dir: L.pick([1, -1]) });
+    return p;
+  }
+  function makeRecipe2(seed) {
+    const R = rng(seed), shape = R.pick([...ALL_SHOTS, ...ALL_LOOPS]), mat = R.pick(ALL_MATS);
+    const s = ALL_LOOPS.includes(shape) ? makeLoop(R, shape, mat) : makeShape(R, shape, mat);
+    if (ALL_LOOPS.includes(shape)) extraLoop(R, shape, s.p); else extraShape(R, shape, s.p);
+    return { s, pal: genPalette(R, mat) };
+  }
   function makeRecipe(seed, keep) {
-    const R = rng(seed);
-    let s = makeShape(R);
-    let pal = genPalette(R, s.mat);
-    // a separate stream decides loops, so seeds that stay one-shots look as they did before
-    const L = rng((Math.imul(seed, 31) + 7) >>> 0);
-    if (L() < 0.4) { s = makeLoop(L); pal = genPalette(L, s.mat); }
+    let s, pal;
+    if (seed > GEN1) ({ s, pal } = makeRecipe2(seed));
+    else {
+      const R = rng(seed);
+      s = makeShape(R);
+      pal = genPalette(R, s.mat);
+      // a separate stream decides loops, so seeds that stay one-shots look as they did before
+      const L = rng((Math.imul(seed, 31) + 7) >>> 0);
+      if (L() < 0.4) { s = makeLoop(L); pal = genPalette(L, s.mat); }
+    }
     const rec = { seed, shape: s.shape, mat: s.mat, p: s.p, pal, sim: seed };
     if (keep && keep.shape) { rec.shape = keep.shape.shape; rec.mat = keep.shape.mat; rec.p = { ...keep.shape.p }; }
     if (keep && keep.pal) rec.pal = keep.pal.map((c) => c.slice());
@@ -579,10 +650,12 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   function finish(rec) {
     rec.name = `${ADJ[rec.mat]} ${hueName(rec.pal[4])} ${NOUN[rec.shape]}`;
-    rec.loop = LOOPS.includes(rec.shape);
-    rec.total = rec.loop ? rec.p.period * 3 : rec.p.wind + rec.p.stop + (rec.shape === 'geyser' ? rec.p.erupt : 0) + 3.5;
+    rec.loop = ALL_LOOPS.includes(rec.shape);
+    rec.total = rec.loop ? rec.p.period * 3 : rec.p.wind + rec.p.stop + sustain(rec) + 3.5;
     return rec;
   }
+  // how long a one-shot keeps pouring after contact: the eruption's column, the beam
+  const sustain = (rec) => (rec.shape === 'geyser' ? rec.p.erupt : rec.shape === 'beam' ? rec.p.beam : 0);
   // same shape and palette, numbers nudged, different particles
   function vary(rec, seed) {
     const R = rng(seed), p = { ...rec.p };
@@ -601,9 +674,93 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return finish({ ...rec, seed, sim: seed, p, pal: rec.pal.map((c) => c.slice()) });
   }
 
+  // ---------------------------------------------------------------- edits: a seed's recipe, changed by hand
+  // Edits are a small flat object (shape, mat, hue, sat, c0..c7 and knob values) applied on top of the seed's recipe,
+  // so a seed plus its edits always gives the same effect and both fit in a link.
+  const KNOBS = [
+    { id: 'x', label: 'Position', abs: 'x', min: 20, max: 140, step: 1, fmt: (v) => `${v} px` },
+    { id: 'size', label: 'Size', min: 0.5, max: 1.6, mult: ['ringR', 'hero', 'rayLen', 'crystal', 'slashR', 'slashW', 'beamW', 'colW', 'puffSize', 'rx', 'ry', 'orbitR', 'vr', 'vh', 'rr', 'os', 'dr', 'dh', 'head', 'bowl', 'flameH', 'trail'] },
+    { id: 'amount', label: 'Particles', min: 0, max: 2, int: true, mult: ['sparks', 'puffs', 'grit', 'embers', 'shards', 'tongues', 'motes', 'wisps', 'orbit', 'bands'] },
+    { id: 'wind', label: 'Wind-up', min: 0.5, max: 2, mult: ['wind'], shot: true },
+    { id: 'pour', label: 'Pour time', min: 0.5, max: 2, mult: ['erupt', 'beam', 'hold'], shot: true, only: ['geyser', 'beam', 'pillar'] },
+    { id: 'burst', label: 'Spark speed', min: 0.4, max: 1.8, mult: ['sparkSpeed'], shot: true },
+    { id: 'gravity', label: 'Gravity', min: 0.2, max: 2, mult: ['gravity'], shot: true },
+    { id: 'stop', label: 'Hit-stop', min: 0, max: 3, mult: ['stop'], shot: true },
+    { id: 'shake', label: 'Screen shake', min: 0, max: 3, mult: ['shake'], shot: true },
+    { id: 'period', label: 'Loop length', pick: 'period', values: [1, 1.5, 2, 2.5, 3, 4, 5, 6], names: (v) => `${v} s`, loop: true },
+    { id: 'tempo', label: 'Cycles per loop', pick: 'm', values: [1, 2, 3], names: (v) => `${v}`, loop: true },
+    { id: 'spin', label: 'Spin', pick: 'spin', values: [1, -1], names: (v) => (v > 0 ? 'Clockwise' : 'Counter-clockwise'), loop: true },
+    { id: 'dir', label: 'Facing', pick: 'dir', values: [1, -1], names: (v) => (v > 0 ? 'Right' : 'Left') },
+  ];
+  // numbers that depend on the material, refreshed when only the material changes
+  const MAT_KEYS = ['puffs', 'smoke', 'grit', 'embers', 'forks', 'shards', 'arcs'];
+  // a full set of numbers for a shape and material, from the seed alone, so the same edits always land the same way
+  function freshNumbers(seed, shape, mat) {
+    const R = rng((Math.imul(seed, 2654435761) ^ 0x2545f491) >>> 0);
+    if (ALL_LOOPS.includes(shape)) return extraLoop(R, shape, makeLoop(R, shape, mat).p);
+    return extraShape(R, shape, makeShape(R, shape, mat).p);
+  }
+  // the shape, material and numbers before any knob is turned
+  function editBase(base, ed) {
+    const shape = ed.shape || base.shape, mat = ed.mat || base.mat;
+    if (shape !== base.shape) return { shape, mat, p: freshNumbers(base.seed, shape, mat) };
+    const p = { ...base.p };
+    if (mat !== base.mat) { const f = freshNumbers(base.seed, shape, mat); for (const k of MAT_KEYS) if (k in f) p[k] = f[k]; }
+    return { shape, mat, p };
+  }
+  const knobFits = (k, shape, p) => (k.shot ? !ALL_LOOPS.includes(shape) : k.loop ? ALL_LOOPS.includes(shape) : true) && (!k.only || k.only.includes(shape)) && [...(k.mult || []), k.abs, k.pick].some((key) => key in p);
+  function rgbToHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    if (!d) return [0, 0, l];
+    const s = d / (1 - Math.abs(2 * l - 1)), h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return [h * 60, s, l];
+  }
+  const fromHex = (h) => [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  function applyEdits(base, ed) {
+    if (!ed || !Object.keys(ed).length) return base;
+    const { shape, mat, p } = editBase(base, ed);
+    for (const k of KNOBS) {
+      if (!(k.id in ed) || !knobFits(k, shape, p)) continue;
+      const v = ed[k.id];
+      if (k.abs) p[k.abs] = v;
+      else if (k.pick) { if (k.pick in p) p[k.pick] = v; }
+      else for (const key of k.mult) if (typeof p[key] === 'number') p[key] = k.int ? Math.round(p[key] * v) : p[key] * v;
+    }
+    let pal = base.pal.map((c) => c.slice());
+    if (ed.hue || (ed.sat !== undefined && ed.sat !== 1))
+      pal = pal.map((c) => { const [h, s, l] = rgbToHsl(c); return hsl(h + (ed.hue || 0), clamp(s * (ed.sat ?? 1)), l).map(Math.round); });
+    for (let i = 0; i < 8; i++) if (ed['c' + i]) pal[i] = fromHex(ed['c' + i]);
+    return finish({ ...base, shape, mat, p, pal, edits: Object.fromEntries(Object.entries(ed).sort()) });
+  }
+  // links carry edits after the seed: #s123~shape:beam,hue:40,c3:ff00aa
+  function encodeEdits(ed) {
+    const keys = Object.keys(ed).sort();
+    return keys.length ? '~' + keys.map((k) => `${k}:${typeof ed[k] === 'number' ? +ed[k].toFixed(2) : ed[k]}`).join(',') : '';
+  }
+  function decodeEdits(text) {
+    const ed = {};
+    for (const part of (text || '').split(',')) {
+      const [k, v] = part.split(':');
+      if (k === 'shape' && [...ALL_SHOTS, ...ALL_LOOPS].includes(v)) ed.shape = v;
+      else if (k === 'mat' && ALL_MATS.includes(v)) ed.mat = v;
+      else if (k === 'hue' && Number.isFinite(+v)) ed.hue = clamp(+v, -180, 180);
+      else if (k === 'sat' && Number.isFinite(+v)) ed.sat = clamp(+v, 0, 1.6);
+      else if (/^c[0-7]$/.test(k) && /^[0-9a-f]{6}$/.test(v)) ed[k] = v;
+      else {
+        const kn = KNOBS.find((q) => q.id === k);
+        if (!kn || !Number.isFinite(+v)) continue;
+        if (kn.pick) { if (kn.values.includes(+v)) ed[k] = +v; }
+        else ed[k] = clamp(+v, kn.min, kn.max);
+      }
+    }
+    return ed;
+  }
+
   // ---------------------------------------------------------------- the effect engine
   const center = (rec) => [rec.p.x, FLOOR - rec.p.alt];
-  const focus = (rec) => (rec.shape === 'nova' ? center(rec) : [rec.p.x, FLOOR - 6]);
+  const airy = (rec) => rec.shape === 'nova' || AIR.includes(rec.shape);
+  const focus = (rec) => (rec.shape === 'slash' ? slashPt(rec, 0.5) : airy(rec) ? center(rec) : [rec.p.x, FLOOR - 6]);
   function boltAt(rec, u) {
     const p = rec.p;
     if (rec.shape === 'slam') { const e = Math.pow(clamp(u), 2.2); return [p.x, -8 + (FLOOR - 4 + 8) * e]; }
@@ -614,6 +771,19 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const p = rec.p, h = p.crystal * clamp(u * 1.3), w = h * 0.34, x = p.x;
     return { h, w, left: [[x - w, FLOOR], [x - w * 0.8, FLOOR - h * 0.6], [x, FLOOR - h], [x, FLOOR]], right: [[x, FLOOR], [x, FLOOR - h], [x + w * 0.7, FLOOR - h * 0.55], [x + w, FLOOR]] };
   }
+  // the slash's crescent: an arc round the centre, flattened and tilted, swept from u = 0 to 1 in the direction dir
+  function slashPt(rec, u, inset = 0) {
+    const p = rec.p, [cx, cy] = center(rec), a = -Math.PI / 2 + p.dir * p.slashArc * (u - 0.5), r = p.slashR - inset;
+    const x0 = Math.cos(a) * r, y0 = Math.sin(a) * r * p.slashFlat, c = Math.cos(p.slashTilt), s = Math.sin(p.slashTilt);
+    return [cx + x0 * c - y0 * s, cy + x0 * s + y0 * c];
+  }
+  function slashTan(rec, u) {
+    const [x0, y0] = slashPt(rec, u - 0.01), [x1, y1] = slashPt(rec, u + 0.01), L = Math.hypot(x1 - x0, y1 - y0) || 1;
+    return [(x1 - x0) / L, (y1 - y0) / L];
+  }
+  const SWEEP = 0.09;
+  // where the beam leaves from: the caster's side of the hit
+  const muzzleX = (rec) => Math.round(clamp(rec.p.x - rec.p.dir * rec.p.beamLen, 6, 154));
   function createFx(rec) {
     const C = rec.pal, R = rng(rec.sim * 7 + 1);
     const st = { rec, t: 0, hit: false, R, C, FR: [WHITE, C[7], C[6], C[5], C[4], C[3], C[2], C[1]], ps: [], lights: [], cracks: [], forks: [] };
@@ -631,6 +801,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       case 'storm': spawn(st, 'vapour', x, y, vx, vy, R.range(0.3, 0.6), { size: s * 0.7 }); break;
       case 'dust': spawn(st, 'dust', x, y, vx * 0.8, vy * 0.5, R.range(0.8, 1.6), { size: s * 1.2 }); break;
       case 'void': spawn(st, 'void', x, y, vx * 0.6, vy * 0.6, R.range(0.5, 1.0), { size: s }); break;
+      case 'poison': spawn(st, 'bubble', x, y, vx * 0.5, vy * 0.45, R.range(0.7, 1.5), { size: s * 0.55 }); break;
+      case 'holy': spawn(st, 'gleam', x, y, vx * 0.6, vy * 0.5, R.range(0.6, 1.2), { size: s }); break;
+      case 'water': spawn(st, 'drop', x, y, vx * 1.1, vy * 1.3, R.range(0.9, 1.6), { size: s }); break;
     }
   }
   function makeFork(R, x, y, ang, len) {
@@ -646,16 +819,25 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return variants;
   }
   function impact(st) {
-    const R = st.R, rec = st.rec, p = rec.p, C = st.C, [cx, cy] = center(rec), [fx, fy] = focus(rec), nova = rec.shape === 'nova';
-    st.lights.push({ x: fx, y: fy - 2, r: 46 + p.ringR * 0.5, c: C[6], k: 1.1, life: 1.4, max: 1.4 });
-    st.lights.push({ x: fx, y: fy, r: 20, c: WHITE, k: 1.3, life: 0.3, max: 0.3 });
+    const R = st.R, rec = st.rec, p = rec.p, C = st.C, [cx, cy] = center(rec), [fx, fy] = focus(rec), nova = airy(rec);
+    // a slash keeps its light low so the crescent reads
+    const lk = rec.shape === 'slash' ? 0.4 : 1;
+    st.lights.push({ x: fx, y: fy - 2, r: 46 + p.ringR * 0.5, c: C[6], k: 1.1 * lk, life: 1.4, max: 1.4 });
+    st.lights.push({ x: fx, y: fy, r: 20, c: WHITE, k: 1.3 * lk, life: 0.3, max: 0.3 });
     for (let i = 0; i < p.sparks; i++) {
-      const a = nova ? R.range(0, TAU) : -Math.PI / 2 + R.range(-p.spread, p.spread), sp = p.sparkSpeed * R.range(0.45, 1);
+      // a slash throws its sparks off the blade's path, a beam sprays them back toward the caster
+      if (rec.shape === 'slash') {
+        const u = R.range(0.35, 1), [x, y] = slashPt(rec, u), [tx, ty] = slashTan(rec, u), sp = p.sparkSpeed * R.range(0.45, 1);
+        spawn(st, 'spark', x, y, tx * sp, ty * sp - 30, R.range(0.3, 0.8));
+        continue;
+      }
+      const a = rec.shape === 'beam' ? (p.dir > 0 ? Math.PI : 0) + R.range(-p.spread, p.spread) * 0.8 : nova ? R.range(0, TAU) : -Math.PI / 2 + R.range(-p.spread, p.spread), sp = p.sparkSpeed * R.range(0.45, 1);
       spawn(st, 'spark', fx, fy + (nova ? 0 : 3), Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.35, 0.95));
     }
     const puffs = rec.shape === 'geyser' ? Math.ceil(p.puffs * 0.4) : p.puffs;
     for (let i = 0; i < puffs; i++) {
-      if (nova) { const a = R.range(0, TAU), sp = R.range(15, 55); spawnPuff(st, cx + Math.cos(a) * 3, cy + Math.sin(a) * 3, Math.cos(a) * sp, Math.sin(a) * sp - 10); }
+      if (rec.shape === 'slash') { const u = R.range(0.15, 1), [x, y] = slashPt(rec, u), [tx, ty] = slashTan(rec, u); spawnPuff(st, x, y, tx * 30, ty * 30 - 12, 0.7); }
+      else if (nova) { const a = R.range(0, TAU), sp = R.range(15, 55); spawnPuff(st, cx + Math.cos(a) * 3, cy + Math.sin(a) * 3, Math.cos(a) * sp, Math.sin(a) * sp - 10); }
       else spawnPuff(st, cx + R.range(-7, 7), cy - R.range(1, 5), R.range(-35, 35), R.range(-75, -25));
     }
     if (!nova) for (let i = 0; i < Math.ceil(puffs / 3); i++) {
@@ -666,8 +848,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     for (let i = 0; i < p.grit; i++)
       spawn(st, 'grit', cx + R.range(-4, 4), cy - 2, R.range(-85, 85), R.range(-170, -60), R.range(1.3, 2.2), { rock: mixC(rockBase, WHITE, (i % 3) * 0.12) });
     for (let i = 0; i < p.embers; i++) {
-      const kind = rec.mat === 'frost' ? 'flake' : 'ember';
-      spawn(st, kind, cx + R.range(-16, 16), cy - R.range(2, 18), 0, kind === 'flake' ? R.range(-30, -5) : -R.range(10, 24), R.range(1.0, 2.2), { delay: R.range(0, 0.9), size: R.range(0.8, 1.8) });
+      const kind = rec.mat === 'frost' || rec.mat === 'water' ? 'flake' : rec.mat === 'holy' ? 'twinkle' : 'ember';
+      spawn(st, kind, cx + R.range(-16, 16), cy - R.range(2, 18), 0, kind === 'ember' ? -R.range(10, 24) : R.range(-30, -5), R.range(1.0, 2.2), { delay: R.range(0, 0.9), size: R.range(0.8, 1.8) });
     }
     for (let i = 0; i < p.cracks; i++) {
       const dir = i % 2 ? 1 : -1;
@@ -699,6 +881,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         if (R() < 0.2 + 0.7 * u) { const a = R.range(0, TAU), d = R.range(22, 38); spawn(st, 'streak', cx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.3, -Math.sin(a) * d * 1.3, 0.6, { tx: cx, ty: cy }); }
       } else if (rec.shape === 'geyser') {
         if (R() < 0.05 + 0.2 * u) spawn(st, 'grit', cx + R.range(-14, 14), FLOOR - 0.5, R.range(-10, 10), -R.range(20, 70), 0.6, { rock: mixC(st.C[2], [80, 72, 92], 0.5) });
+      } else if (rec.shape === 'beam') {
+        const mx = muzzleX(rec);
+        if (R() < 0.15 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(12, 26); spawn(st, 'streak', mx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.4, -Math.sin(a) * d * 1.4, 0.6, { tx: mx, ty: cy }); }
+      } else if (rec.shape === 'pillar') {
+        if (R() < 0.08 + 0.3 * u) { const a = R.range(0, TAU), r = 4 + (1 - u) * 14; spawn(st, 'mote', cx + Math.cos(a) * r, FLOOR + 1 + Math.sin(a) * r * 0.28, 0, -R.range(15, 40), R.range(0.2, 0.45)); }
       } else if (rec.shape === 'shatter') {
         if (u > 0.55 && R() < 0.12) { const c = crystalPts(rec, u); spawn(st, 'mote', cx + R.range(-c.w, c.w) * 0.6, FLOOR - R.range(2, c.h), R.range(-15, 15), R.range(-30, -5), R.range(0.2, 0.4)); }
       }
@@ -708,6 +895,18 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       if (R() < 0.55) { const a = -Math.PI / 2 + R.range(-p.cone, p.cone), sp = R.range(80, 150) * power; spawnPuff(st, cx + R.range(-2, 2), FLOOR - 1, Math.cos(a) * sp, Math.sin(a) * sp); }
       if (R() < 0.2) { const a = -Math.PI / 2 + R.range(-p.cone * 1.5, p.cone * 1.5), sp = R.range(140, 260) * power; spawn(st, 'spark', cx, FLOOR - 2, Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.4, 0.9)); }
       if (R() < 0.04) st.lights.push({ x: cx, y: FLOOR - 14, r: 34, c: st.C[6], k: 0.6, life: 0.25, max: 0.25 });
+    }
+    if (rec.shape === 'beam' && st.hit && t - IMP < p.beam) {
+      const back = p.dir > 0 ? Math.PI : 0, mx = muzzleX(rec);
+      if (R() < 0.5) { const a = back + R.range(-1.2, 1.2), sp = p.sparkSpeed * R.range(0.4, 0.9); spawn(st, 'spark', cx, cy, Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.25, 0.6)); }
+      if (R() < 0.3) { const a = back + R.range(-1, 1); spawnPuff(st, cx, cy, Math.cos(a) * 40, Math.sin(a) * 40 - 15, 0.8); }
+      if (R() < 0.2) spawnPuff(st, mx + (cx - mx) * R(), cy + R.range(-2, 2), R.range(-10, 10), R.range(-25, -5), 0.55);
+      if (R() < 0.05) st.lights.push({ x: cx, y: cy, r: 30, c: st.C[6], k: 0.6, life: 0.2, max: 0.2 });
+    }
+    if (rec.shape === 'pillar' && st.hit && t - IMP < p.hold) {
+      if (R() < 0.4) { const s = R() < 0.5 ? -1 : 1; spawnPuff(st, cx + s * R.range(1, 4), FLOOR - 1, s * R.range(30, 70), -R.range(5, 25), 0.8); }
+      if (R() < 0.25) spawnPuff(st, cx + R.range(-2, 2), R.range(10, FLOOR - 4), R.range(-12, 12), R.range(-20, 0), 0.6);
+      if (R() < 0.25) { const a = -Math.PI / 2 + R.range(-1.3, 1.3), sp = p.sparkSpeed * R.range(0.4, 0.9); spawn(st, 'spark', cx, FLOOR - 2, Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.3, 0.7)); }
     }
     const out = [];
     for (const q of st.ps) {
@@ -731,6 +930,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         case 'ember': q.vx = Math.sin(st.t * 3 + q.seed) * 8; q.vy += (-14 - q.vy) * dt; break;
         case 'flake': q.vx = Math.sin(st.t * 2 + q.seed) * 10; q.vy += (14 - q.vy) * 1.5 * dt; break;
         case 'mote': q.vx *= 1 - 3 * dt; q.vy *= 1 - 3 * dt; break;
+        case 'bubble': q.vx = q.vx * (1 - 2 * dt) + Math.sin(st.t * 7 + q.seed) * 30 * dt; q.vy = q.vy * (1 - 2 * dt) - 14 * dt; break;
+        case 'gleam': q.vx *= 1 - 2.5 * dt; q.vy = q.vy * (1 - 2.5 * dt) - 6 * dt; break;
+        case 'drop': q.vy += p.gravity * 0.7 * dt; break;
+        case 'twinkle': q.vx = Math.sin(st.t * 1.5 + q.seed) * 6; q.vy += (6 - q.vy) * dt; break;
+        case 'splash': q.vx = 0; q.vy = 0; break;
       }
       q.x += q.vx * dt; q.y += q.vy * dt;
       if ((q.k === 'spark' || q.k === 'grit' || q.k === 'shard') && q.y >= FLOOR && q.vy > 0) {
@@ -738,7 +942,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         if (((q.k === 'grit' || q.k === 'shard') && q.bounces >= 2) || Math.abs(q.vy) < 25) { q.vy = 0; q.vx *= 0.9; if (q.k !== 'spark') { q.rest = true; q.vx = 0; } }
         else { q.vy *= q.k === 'spark' ? -0.38 : -0.3; q.vx *= 0.7; if (q.k === 'shard') q.spin *= -0.5; }
       }
-      if (q.k === 'flake' && q.y > FLOOR) q.life = Math.min(q.life, 0.2);
+      if ((q.k === 'flake' || q.k === 'twinkle') && q.y > FLOOR) q.life = Math.min(q.life, 0.2);
+      // a drop that reaches the floor becomes a little crown
+      if (q.k === 'drop' && q.y >= FLOOR && q.vy > 0) Object.assign(q, { k: 'splash', y: FLOOR, vx: 0, vy: 0, life: 0.3, max: 0.3 });
       out.push(q);
     }
     for (const q of out) if (q.k === 'smoke' && !q.max) q.max = q.life;
@@ -748,7 +954,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
 
   function drawRings(st, back) {
-    const rec = st.rec, p = rec.p, e = st.t - p.wind, C = st.C, nova = rec.shape === 'nova', [cx, cy] = center(rec);
+    const rec = st.rec, p = rec.p, e = st.t - p.wind, C = st.C, nova = airy(rec), [cx, cy] = center(rec);
     if (e < 0) return;
     for (let k = 0; k < p.rings; k++) {
       const ee = e - k * 0.09;
@@ -768,9 +974,67 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     }
   }
 
+  // the crescent between tail and head (0..1 along the sweep): sharp at both tips, white on the leading edge, cooling with heat
+  function drawSlash(st, tail, head, heat, flash) {
+    const rec = st.rec, p = rec.p, C = st.C, n = Math.ceil(p.slashArc * p.slashR * 1.6), dotted = heat < 0.35;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      if (u < tail || u > head || (dotted && i % 2)) continue;
+      const w = dotted ? 0 : p.slashW * Math.pow(Math.sin(Math.PI * u), 0.7) * (0.6 + 0.4 * heat), lead = head - u < 0.1;
+      for (let d = 0; d <= w; d += 0.5) {
+        const [x, y] = slashPt(rec, u, d);
+        if (y > FLOOR) continue;
+        const depth = d / Math.max(w, 0.5), idx = clamp((depth < 0.3 ? 7 : depth < 0.65 ? 6 : 5) - Math.round((1 - heat) * 3), 1, 7);
+        put(x, y, flash || (lead && heat > 0.95 && depth < 0.5) ? WHITE : C[idx], dotted ? heat / 0.35 : 1);
+      }
+      if (i % 4 === 0) { const [x, y] = slashPt(rec, u); addL(Math.floor(x), Math.floor(y), C[6], (flash ? 0.8 : 0.4) * heat); }
+    }
+  }
+  function drawBeam(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, t = st.t, [hx, hy] = center(rec), mx = muzzleX(rec), x0 = Math.min(mx, hx), x1 = Math.max(mx, hx);
+    if (e >= p.beam) {
+      // the beam gives out as a dotted line that fades
+      const q = (e - p.beam) / 0.25;
+      if (q < 1) for (let x = x0 + (Math.floor(t * 30) % 2); x <= x1; x += 2) put(x, hy, q < 0.5 ? C[7] : C[5], 1 - q);
+      return;
+    }
+    const on = Math.min(1, e / 0.04), off = 1 - clamp((e - p.beam * 0.75) / (p.beam * 0.25)), th = p.beamW * (e < 0.08 ? 1.5 : 1) * (0.5 + 0.5 * off) * on;
+    for (let x = x0; x <= x1; x++) {
+      // a ripple runs down the beam toward the hit
+      const w = th * (1 + 0.25 * Math.sin(x * 0.55 - p.dir * t * 50)), m = Math.ceil(w);
+      for (let dy = -m; dy <= m; dy++) {
+        const d = Math.abs(dy) / Math.max(w, 0.5);
+        if (d <= 1) put(x, hy + dy, d < 0.35 ? WHITE : d < 0.7 ? C[7] : C[5], d > 0.85 ? 0.6 : 1);
+      }
+      if (x % 5 === 0) addL(x, hy, C[6], 0.5 * off);
+    }
+    glow((mx + hx) / 2, hy, Math.abs(hx - mx) * 0.55, C[5], 0.3 * off);
+    circle(mx, hy, th + 1.8, C[7]); circle(mx, hy, th + 0.6, WHITE); glow(mx, hy, 12, C[6], 0.7 * off);
+    circle(hx, hy, th + 2.2 + Math.sin(t * 60) * 0.8, C[6]); circle(hx, hy, th + 0.8, WHITE); glow(hx, hy, 18, C[6], 0.9 * off);
+  }
+  function drawPillar(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, t = st.t, cx = p.x;
+    if (e >= p.hold) {
+      // the column draws back up into the sky
+      const q = (e - p.hold) / 0.22;
+      if (q < 1) for (let y = 0; y < FLOOR * (1 - q); y += 2) put(cx, y, C[7], 1 - q);
+      return;
+    }
+    const w = p.colW * Math.pow(1 - e / p.hold, 0.6) + 0.6;
+    for (let y = 0; y < FLOOR; y++) {
+      const off = w > 2 ? Math.sin(y * 0.35 - t * 40) * 0.6 : 0, m = Math.ceil(w + 1);
+      for (let dx = -m; dx <= m; dx++) {
+        const d = Math.abs(dx - off) / w;
+        if (d <= 1) put(cx + dx, y, d < 0.4 ? WHITE : d < 0.75 ? C[7] : C[5], d > 0.85 ? 0.6 : 1);
+      }
+      if (y % 6 === 0) addL(cx, y, C[6], 0.6);
+    }
+    glow(cx, FLOOR - 4, 16 + w * 2, WHITE, 0.6 * (1 - e / p.hold));
+  }
+
   function draw(st, hero) {
     const rec = st.rec, p = rec.p, t = st.t, C = st.C, FR = st.FR, IMP = p.wind, e = t - IMP;
-    const [cx, cy] = center(rec), [fx, fy] = focus(rec), ground = rec.shape !== 'nova';
+    const [cx, cy] = center(rec), [fx, fy] = focus(rec), ground = !airy(rec);
     // back layer: scorch, cracks, far half of rings, soft volumes
     if (e >= 0 && ground) {
       const sa = 0.6 * (1 - clamp((e - 1.6) / 1.4));
@@ -809,8 +1073,15 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         const r = q.size * (0.6 + age * 0.9), c = mixC(C[3], [120, 106, 92], 0.5);
         disc(x, y, r, c, Math.pow(k, 1.3) * 0.7);
         if (age < 0.5) disc(x - r * 0.2, y - r * 0.3, r * 0.5, mixC(c, C[6], 0.35), Math.pow(k, 1.3) * 0.45);
+      } else if (q.k === 'gleam') {
+        const r = q.size * (0.5 + age * 0.9);
+        disc(x, y, r, C[6], Math.pow(k, 1.5) * 0.3);
+        glow(x, y, r * 2.2, C[6], 0.3 * k);
       }
     }
+    if (e >= 0 && rec.shape === 'slash') { const q = clamp(e / 0.5); if (q < 1) drawSlash(st, Math.pow(clamp(e / 0.45), 1.5), 1, 1 - q, false); }
+    if (e >= 0 && rec.shape === 'beam') drawBeam(st, e);
+    if (e >= 0 && rec.shape === 'pillar') drawPillar(st, e);
     // front layer
     let flames = 0;
     for (const q of st.ps) {
@@ -864,6 +1135,39 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           put(x, y, c, a);
           if (q.size > 1.3) { put(x + 1, y, C[5], a * 0.8); put(x - 1, y, C[5], a * 0.8); put(x, y + 1, C[5], a * 0.8); put(x, y - 1, C[5], a * 0.8); }
           addL(Math.floor(x), Math.floor(y), C[6], 0.3 * a);
+          break;
+        }
+        case 'bubble': {
+          // a ring with a glint that swells as it rises, then pops into four specks
+          const r = q.size * (0.6 + age * 0.7);
+          if (k < 0.12) { const d = r + (0.12 - k) * 20; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) put(x + dx * d, y + dy * d, C[7], k / 0.12); break; }
+          const n = Math.max(6, Math.ceil(r * 6));
+          for (let i = 0; i < n; i++) { const g = (i / n) * TAU; put(x + Math.cos(g) * r, y + Math.sin(g) * r, Math.sin(g) > 0.3 ? C[4] : C[6]); }
+          if (r > 1.6) disc(x, y, r - 0.8, C[3], 0.35);
+          put(x - r * 0.45, y - r * 0.45, C[7]);
+          glow(x, y, r + 2, C[5], 0.18);
+          break;
+        }
+        case 'gleam': case 'twinkle': {
+          // a four-pointed glint whose arms pulse
+          const arm = (q.k === 'gleam' ? 1.5 + q.size * 0.4 : 1.2) * (0.5 + 0.5 * Math.sin(t * 14 + q.seed)) * Math.min(1, k * 3);
+          if (arm < 0.6) { put(x, y, C[6], Math.min(1, k * 3)); break; }
+          sparkle(Math.round(x), Math.round(y), Math.round(arm), C[7], C[5]);
+          break;
+        }
+        case 'drop': {
+          const sp = Math.hypot(q.vx, q.vy) || 1, ux = q.vx / sp, uy = q.vy / sp, L = clamp(sp / 40, 1, 3);
+          line(x - ux * L, y - uy * L, x, y, C[5]);
+          put(x, y, C[7]); put(x - ux * L * 0.5 - 0.5, y - uy * L * 0.5, C[6]);
+          addL(Math.floor(x), Math.floor(y), C[6], 0.25);
+          break;
+        }
+        case 'splash': {
+          // a crown that rises and spreads on contact with the floor
+          const r = 1 + age * 3, h = Math.sin(Math.PI * age) * 2.5;
+          put(x - r, FLOOR - h, C[6], k * 2); put(x + r, FLOOR - h, C[6], k * 2);
+          put(x - r * 0.5, FLOOR - h * 1.4, C[7], k * 2); put(x + r * 0.5, FLOOR - h * 1.4, C[7], k * 2);
+          line(x - r - 1, FLOOR + 1, x + r + 1, FLOOR + 1, C[4], k);
           break;
         }
         case 'streak': {
@@ -923,6 +1227,21 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         glow(cx, FLOOR, 8 + 20 * u, C[5], 0.5 * u);
         const w = 3 + 10 * u;
         line(cx - w, FLOOR + 1, cx + w, FLOOR + 1, (v) => (Math.abs(v - 0.5) < 0.15 ? C[7] : C[5]), (v) => u * (1 - Math.abs(v - 0.5) * 1.6));
+      } else if (rec.shape === 'slash') {
+        // a glint where the blade starts, then the sweep in the last few hundredths of a second
+        const sw = clamp((t - (IMP - SWEEP)) / SWEEP), [gx, gy] = slashPt(rec, 0);
+        if (sw <= 0) { if (u > 0.3) sparkle(Math.round(gx), Math.round(gy), Math.round(1 + 3 * Math.sin(Math.PI * (u - 0.3) / 0.7)), C[7], C[5]); }
+        else drawSlash(st, Math.max(0, sw - 0.6), sw, 1, false);
+      } else if (rec.shape === 'beam') {
+        const mx = muzzleX(rec), r = 1 + 3 * u + Math.sin(t * 40) * 0.5 * u;
+        circle(mx, cy, r + 1.2, C[5]); circle(mx, cy, r, u > 0.7 ? WHITE : C[7]);
+        glow(mx, cy, 6 + 14 * u, C[6], 0.3 + 0.5 * u);
+      } else if (rec.shape === 'pillar') {
+        const r = 4 + (1 - u) * 14, col = () => (u > 0.75 && Math.floor(t * 20) % 2 ? WHITE : C[6]);
+        flatRing(cx, FLOOR + 1, r, 0.28, true, col, u, 0.3);
+        flatRing(cx, FLOOR + 1, r, 0.28, false, col, u, 0.3);
+        glow(cx, FLOOR, 6 + 16 * u, C[5], 0.5 * u);
+        if (u > 0.6) for (let y = (Math.floor(t * 30) % 3); y < FLOOR; y += 3) put(cx, y, C[6], (u - 0.6) / 0.4 * 0.8);
       } else if (rec.shape === 'shatter') {
         const c = crystalPts(rec, u);
         if (c.h > 1) {
@@ -945,7 +1264,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     }
     if (hero) {
       const r = p.hero;
-      if (rec.mat === 'void') { circle(fx, fy, r + 1.5, WHITE); circle(fx, fy, r - 1.5, C[0]); glow(fx, fy, r * 4, C[6], 1.1); }
+      if (rec.shape === 'slash') { drawSlash(st, 0, 1, 1, true); glow(fx, fy, p.slashR * 1.2, WHITE, 0.6); }
+      else if (rec.mat === 'void') { circle(fx, fy, r + 1.5, WHITE); circle(fx, fy, r - 1.5, C[0]); glow(fx, fy, r * 4, C[6], 1.1); }
       else { circle(fx, fy, r + 1.5, C[7]); circle(fx, fy, r, WHITE); glow(fx, fy, r * 4.5, WHITE, 1.2); }
     }
     const flick = rec.mat === 'storm' ? (Math.floor(t * 30) % 2 ? 1 : 0.7) : 1;
@@ -1019,6 +1339,28 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         glow(x, y, r + 3, C[4], 0.22 * k);
         break;
       }
+      case 'poison': {
+        const r = size * (0.5 + u * 0.7);
+        if (u > 0.88) { const d = r + (u - 0.88) * 25; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) put(x + dx * d, y + dy * d, C[7], (1 - u) / 0.12); break; }
+        const n = Math.max(6, Math.ceil(r * 6));
+        for (let i = 0; i < n; i++) { const g = (i / n) * TAU; put(x + Math.cos(g) * r, y + Math.sin(g) * r, Math.sin(g) > 0.3 ? C[4] : C[6], Math.min(1, u * 8)); }
+        put(x - r * 0.45, y - r * 0.45, C[7], Math.min(1, u * 8));
+        glow(x, y, r + 2, C[5], 0.15);
+        break;
+      }
+      case 'holy': {
+        const arm = Math.round(size * Math.sin(Math.PI * u) * 1.4);
+        if (arm < 1) { put(x, y, C[6], k); break; }
+        sparkle(Math.round(x), Math.round(y), arm, C[7], C[5]);
+        break;
+      }
+      case 'water': {
+        const r = size * (0.5 + u * 0.6);
+        disc(x, y, r + 1, C[5], k * 0.25);
+        put(x, y, C[7], k); put(x, y + 1, C[5], k); put(x - 1, y + 1, C[6], k * 0.8);
+        addL(Math.floor(x), Math.floor(y), C[6], 0.25 * k);
+        break;
+      }
     }
   }
   // a jagged arc between two points; f picks the flicker frame
@@ -1039,6 +1381,16 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       const x = cx + Math.cos(g) * r, y = cy + s * r * sy, c = col(g);
       put(x, y, c, a * (back ? 0.7 : 1));
       if (lk && i % 3 === 0) addL(Math.floor(x), Math.floor(y), c, lk * (back ? 0.6 : 1));
+    }
+  }
+
+  function figure(C, L, T) {
+    for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) {
+      const ch = FIG[y][x];
+      if (ch === '.') continue;
+      let c = ch === 'o' ? [18, 15, 24] : x < 5 ? [50, 44, 64] : [36, 32, 48];
+      if (ch === 'e') { c = C[7]; addL(L + x, T + y, C[6], 0.6); }
+      put(L + x, T + y, c);
     }
   }
 
@@ -1066,13 +1418,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     for (const [x, y] of FIGI.aura) { const w = wave(x, y, 0); put(L + x, T + y, w > 0.8 ? C[7] : C[6], 0.3 + 0.7 * w); if (w > 0.7) addL(L + x, T + y, C[6], 0.35); }
     for (const [x, y] of FIGI.ink) put(L + x, T + y, [11, 10, 16]);
     // the figure: flat tones, rim-lit where the wave passes
-    for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) {
-      const ch = FIG[y][x];
-      if (ch === '.') continue;
-      let c = ch === 'o' ? [18, 15, 24] : x < 5 ? [50, 44, 64] : [36, 32, 48];
-      if (ch === 'e') { c = C[7]; addL(L + x, T + y, C[6], 0.6); }
-      put(L + x, T + y, c);
-    }
+    figure(C, L, T);
     for (const [x, y] of FIGI.edge) { if (FIG[y][x] !== '#') continue; const w = wave(x, y, 0.6); if (w > 0.6) put(L + x, T + y, w > 0.9 ? C[5] : C[3]); }
     // tongues of the material rising off the shoulders and head
     const tops = FIGI.tops;
@@ -1231,7 +1577,185 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       }
     }
   }
-  const LOOP_DRAW = { aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune };
+
+  // storm loops crackle: on two frames in three, arcs jump between points that pick(f, a) chooses
+  function arcs(st, ph, pick) {
+    const p = st.rec.p;
+    if (!p.arcs) return;
+    const f = Math.floor(ph * p.period * 15);
+    for (let a = 0; a < p.arcs; a++) if ((f + a) % 3) { const [x0, y0, x1, y1] = pick(f, a); zap(st, x0, y0, x1, y1, f, a * 31); }
+  }
+
+  // a brazier: an iron bowl on three legs, heaped with coals, a flame body and the material pouring off it
+  function drawTorch(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, bw = p.bowl, top = FLOOR - p.stand - 4;
+    const iron = [44, 39, 56], lit = mixC(iron, C[4], 0.45), voidish = st.rec.mat === 'void';
+    const flick = Math.sin(TAU * ph * p.m * 3);
+    glow(cx, FLOOR, 30, C[5], 0.3 + 0.05 * flick);
+    line(cx - bw * 0.5, top + 3, cx - bw * 0.9, FLOOR, iron); line(cx + bw * 0.5, top + 3, cx + bw * 0.9, FLOOR, lit); line(cx, top + 4, cx, FLOOR, iron);
+    for (let y = 0; y <= 3; y++) { const hw = bw * Math.sqrt(1 - (y / 4) ** 2); line(cx - hw, top + y, cx + hw, top + y, y === 0 ? lit : iron); }
+    // coals glow and fade, each on its own beat
+    for (let x = -Math.floor(bw) + 1; x < bw - 1; x++) {
+      const h = 0.5 + 0.5 * Math.sin(TAU * (ph * p.m * 2 + rnd[(x + 40) & 255]));
+      put(cx + x, top - 1, h > 0.75 ? C[7] : h > 0.4 ? C[5] : C[3]);
+    }
+    // the flame body: nested teardrops that sway and stretch
+    const cols = voidish ? [C[6], C[3], C[1], C[0]] : [C[4], C[6], C[7], WHITE];
+    [1, 0.72, 0.48, 0.26].forEach((sc, j) => {
+      const h = p.flameH * sc * (1 + 0.08 * Math.sin(TAU * ph * p.m * 3 + j * 1.7));
+      for (let y = 0; y < h; y++) {
+        const f = y / h, sway = Math.sin(TAU * ph * p.m * 2 + f * 3) * f * 2.5;
+        const w = bw * 0.8 * sc * Math.pow(1 - f, 0.8) * Math.min(1, (f + 0.12) * 3);
+        if (w >= 0.3) line(cx + sway - w, top - 2 - y, cx + sway + w, top - 2 - y, cols[j]);
+      }
+    });
+    for (let i = 0; i < p.tongues; i++) {
+      const u = frac(ph * p.m + rnd[i]);
+      wisp(st, cx + (rnd[i + 40] - 0.5) * bw * 1.3 + Math.sin(TAU * (u + rnd[i + 80])) * 1.5, top - 3 - u * p.flameH * 1.25, u, 1 + rnd[i + 120] * 1.5, i);
+    }
+    // sparks ride the heat up
+    for (let i = 0; i < p.motes / 2; i++) {
+      const u = frac(ph * p.m + rnd[i + 160]), x = cx + (rnd[i + 200] - 0.5) * bw + Math.sin(TAU * (u * 2 + rnd[i])) * 3 * u, y = top - 4 - u * (p.flameH + 24);
+      put(x, y, u < 0.5 ? C[7] : C[5], 1 - u); put(x, y + 1, C[4], (1 - u) * 0.6);
+      addL(Math.floor(x), Math.floor(y), C[6], 0.3 * (1 - u));
+    }
+    arcs(st, ph, (f, a) => [cx + (rnd[(f + a) & 255] - 0.5) * bw * 2, top, cx + (rnd[(f * 3 + a) & 255] - 0.5) * 6, top - p.flameH * (0.6 + 0.4 * rnd[(f * 7 + a) & 255])]);
+    glow(cx, top - p.flameH * 0.4, p.flameH, C[6], 0.5 + 0.08 * flick);
+  }
+
+  // a floating crystal that turns one facet per loop, with tilted rings round it and the material shedding off
+  function drawOrb(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, cy = FLOOR - p.oy + Math.sin(TAU * ph) * 2, s = p.os, F = p.facets;
+    const voidish = st.rec.mat === 'void', rot = ((TAU / F) * ph * p.m * p.spin);
+    glow(cx, FLOOR, 16, C[5], 0.3);
+    flatRing(cx, FLOOR + 1, 6 + Math.sin(TAU * ph), 0.3, true, () => C[4], 0.7, 0.2);
+    flatRing(cx, FLOOR + 1, 6 + Math.sin(TAU * ph), 0.3, false, () => C[5], 0.7, 0.2);
+    const rings = (back) => {
+      for (let j = 0; j < p.rings2; j++) {
+        const rr = s * 2.3 + j * 3.5, chase = TAU * ph * p.m * (j + 1) * p.spin, c = Math.cos(p.ringTilt + j * 0.5), sn = Math.sin(p.ringTilt + j * 0.5), n = Math.ceil(rr * 7);
+        for (let i = 0; i < n; i++) {
+          const g = (i / n) * TAU;
+          if ((Math.sin(g) < 0) !== back) continue;
+          const x0 = Math.cos(g) * rr, y0 = Math.sin(g) * rr * 0.28, h = Math.cos(g - chase);
+          put(cx + x0 * c - y0 * sn, cy + x0 * sn + y0 * c, h > 0.92 ? WHITE : h > 0.5 ? C[7] : C[5], back ? 0.6 : 1);
+          if (h > 0.7 && i % 2 === 0) addL(Math.floor(cx + x0 * c - y0 * sn), Math.floor(cy + x0 * sn + y0 * c), C[6], 0.4);
+        }
+      }
+    };
+    const shed = (back) => {
+      for (let i = 0; i < p.wisps; i++) {
+        const a = rnd[i + 30] * TAU;
+        if ((Math.sin(a) < 0) !== back) continue;
+        const u = frac(ph * p.m + rnd[i]), r = s + 2 + u * 12;
+        wisp(st, cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.5 - u * 7, u, 1 + rnd[i + 60] * 1.2, i);
+      }
+    };
+    rings(true); shed(true);
+    // the crystal: an eight-sided bead seen from the side, front facets lit by how they face the light
+    const top = [cx, cy - s * 1.5], bot = [cx, cy + s * 1.5], V = [];
+    for (let k = 0; k < F; k++) { const a = rot + (k * TAU) / F; V.push([cx + Math.cos(a) * s, cy + Math.sin(a) * s * 0.3, a]); }
+    // back to front, so the loop's last frame matches its first even though the facets have shifted round
+    const faces = V.map((v0, k) => [v0, V[(k + 1) % F], v0[2] + Math.PI / F]).sort((a, b) => Math.sin(a[2]) - Math.sin(b[2]));
+    for (const [v0, v1, am] of faces) {
+      if (Math.sin(am) <= 0) continue;
+      const lightK = 0.5 + 0.5 * Math.cos(am - 0.9), i0 = 2 + Math.round(lightK * 4);
+      poly([top, v0, v1], C[voidish ? Math.max(0, i0 - 3) : Math.min(7, i0 + 1)]);
+      poly([bot, v0, v1], C[voidish ? Math.max(0, i0 - 4) : i0 - 1]);
+    }
+    for (const v of V) if (Math.sin(v[2]) > 0) { line(top[0], top[1], v[0], v[1], C[6], 0.7); put(v[0], v[1], C[7]); }
+    put(top[0], top[1], WHITE);
+    // a glint runs over the crystal once a loop
+    const gl = frac(ph * p.m - rnd[200]);
+    if (gl < 0.1) sparkle(Math.round(cx - s * 0.3), Math.round(cy - s * 0.6), Math.round(1 + 3 * Math.sin(Math.PI * gl / 0.1)), C[7], C[5]);
+    rings(false); shed(false);
+    arcs(st, ph, (f, a) => { const g = rnd[(f * 3 + a) & 255] * TAU; return [cx, cy, cx + Math.cos(g) * s * 2.6, cy + Math.sin(g) * s * 0.8]; });
+    glow(cx, cy, s * 3.2, C[6], 0.55);
+    for (let y = cy + s * 2; y < FLOOR; y += 4) glow(cx, y, 4, C[5], 0.1);
+  }
+
+  // a ward: a glass dome of plates over a figure; a band of light climbs it and shots from one side glance off
+  function drawShield(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, rx = p.dr, ry = p.dh, d = p.dir;
+    const pulse = (g) => (Math.cos(g * 2 - TAU * ph * p.m * p.spin) > 0.8 ? C[7] : C[5]);
+    glow(cx, FLOOR - ry * 0.4, rx * 1.3, C[5], 0.25);
+    flatRing(cx, FLOOR + 1, rx, 0.22, true, pulse, 1, 0.3);
+    figure(C, cx - 5, FLOOR - FH);
+    const band = frac(ph * p.m), hits = [];
+    for (let h = 0; h < p.hits; h++) {
+      const tc = (h + rnd[h + 10] * 0.5) / p.hits, phi = 0.35 + rnd[h + 20] * 0.8;
+      hits.push({ i: h, tc, x: cx + d * Math.cos(phi) * rx, y: FLOOR - Math.sin(phi) * ry, age: frac(ph - tc) * p.period, pre: frac(tc - ph) * p.period });
+    }
+    for (let sy = Math.floor(FLOOR - ry); sy < FLOOR; sy++) for (let sx = Math.floor(cx - rx); sx <= Math.ceil(cx + rx); sx++) {
+      const nx = (sx + 0.5 - cx) / rx, ny = (FLOOR - sy - 0.5) / ry, d2 = nx * nx + ny * ny;
+      if (d2 > 1) continue;
+      const nz = Math.sqrt(1 - d2), lat = Math.asin(clamp(ny)) / (Math.PI / 2), lon = Math.atan2(nx, nz) / Math.PI;
+      const row = lat * p.plates, col = lon * p.plates * 2 + (Math.floor(row) % 2) * 0.5;
+      let lift = 0;
+      for (const h of hits) if (h.age < 0.45) { const rr = 2 + h.age * 50, dd = Math.hypot(sx - h.x, sy - h.y); if (Math.abs(dd - rr) < 1.2) lift = Math.max(lift, 1 - h.age / 0.45); }
+      if (d2 > 0.86) { const h = Math.cos(Math.atan2(ny, nx) * 2 - TAU * ph * p.m * p.spin); put(sx, sy, h > 0.85 ? WHITE : C[6], 0.9); if (sx % 3 === 0) addL(sx, sy, C[6], 0.25); }
+      else if (lift > 0) { put(sx, sy, C[7], lift); addL(sx, sy, C[6], 0.4 * lift); }
+      else if (Math.abs(lat - band) < 0.05) put(sx, sy, C[7], 0.55);
+      else if (frac(row) < 0.13 || frac(col) < 0.07) put(sx, sy, C[5], 0.3 + 0.25 * (1 - nz));
+      else addL(sx, sy, C[5], 0.035);
+    }
+    for (const h of hits) {
+      if (h.pre < 0.2) {
+        // the shot coming in, from the open side
+        const q = h.pre / 0.2, x = h.x + d * q * 70, y = h.y - q * 12;
+        line(x, y, x + d * 6, y - 1, C[6]); put(x, y, WHITE); glow(x, y, 5, C[6], 0.5);
+      }
+      if (h.age < 0.4) {
+        const q = h.age / 0.4;
+        glow(h.x, h.y, 12, WHITE, 0.9 * (1 - q) * (1 - q));
+        for (let k = 0; k < 5; k++) {
+          const a = (d > 0 ? 0 : Math.PI) + (rnd[(h.i * 17 + k * 5 + 3) & 255] - 0.5) * 2.2, sp = 30 + rnd[(k * 13 + 7) & 255] * 50;
+          put(h.x + Math.cos(a) * sp * h.age, h.y + Math.sin(a) * sp * h.age + 60 * h.age * h.age, q < 0.5 ? C[7] : C[5], 1 - q);
+        }
+      }
+    }
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m + rnd[i + 50]), a = rnd[i + 90] * Math.PI;
+      wisp(st, cx + Math.cos(a) * rx * (1 - u * 0.25), FLOOR - 2 - Math.sin(a) * u * ry * 0.9, u, 1 + rnd[i + 130], i);
+    }
+    arcs(st, ph, (f, a) => { const g0 = rnd[(f * 3 + a) & 255] * Math.PI, g1 = g0 + 0.5 + rnd[(f * 5 + a) & 255] * 0.6; return [cx + Math.cos(g0) * rx, FLOOR - Math.sin(g0) * ry, cx + Math.cos(g1) * rx, FLOOR - Math.sin(g1) * ry]; });
+    flatRing(cx, FLOOR + 1, rx, 0.22, false, pulse, 1, 0.3);
+  }
+
+  // a missile in flight, held in place while the world streams past: a head, a trail of the material, shed sparks
+  function drawMissile(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, d = p.dir, hx = p.x, hy = FLOOR - p.alt + Math.sin(TAU * ph * p.m) * 1.5, R0 = p.head;
+    const voidish = st.rec.mat === 'void';
+    for (let j = 0; j < 6; j++) {
+      const u = frac(ph * p.m * 2 + rnd[j]), x = hx + d * 40 - d * u * 130, y = hy + (rnd[j + 10] - 0.5) * 30;
+      line(x, y, x - d * 7, y, C[4], 0.6 * (1 - Math.abs(2 * u - 1)));
+    }
+    glow(hx, FLOOR, 20, C[5], 0.25);
+    for (let i = 0; i < p.tongues * 2; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i]), x = hx - d * (u * p.trail + 2), y = hy + (rnd[i + 40] - 0.5) * R0 * 2 * (0.4 + u) + Math.sin(TAU * (u + rnd[i + 80])) * 1.5;
+      wisp(st, x, y, u, R0 * (1 - u * 0.5) * (0.5 + rnd[i + 120] * 0.5), i);
+    }
+    for (let i = 0; i < p.motes / 2; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i + 160]), x = hx - d * u * p.trail * 0.8, y = hy + (rnd[i + 200] - 0.4) * 8 * u + u * u * 14;
+      put(x, y, u < 0.4 ? C[7] : C[5], 1 - u); addL(Math.floor(x), Math.floor(y), C[6], 0.25 * (1 - u));
+    }
+    if (p.lance) {
+      // a faceted spear with a light pulse running down its core
+      const L = R0 * 4, tip = [hx + d * L, hy], tail = [hx - d * L * 0.8, hy];
+      poly([tip, [hx, hy - R0 * 0.9], tail, [hx, hy + R0 * 0.9]], voidish ? C[1] : C[5]);
+      poly([tip, [hx, hy - R0 * 0.9], tail], voidish ? C[3] : C[6]);
+      line(tail[0], tail[1], tip[0], tip[1], C[7]);
+      const k = frac(ph * p.m * 2);
+      put(hx + d * (L - k * L * 1.8), hy, WHITE); put(tip[0], tip[1], WHITE);
+    } else {
+      const r = R0 + 1.5 + 0.5 * Math.sin(TAU * ph * p.m * 6);
+      circle(hx, hy, r, C[5]);
+      circle(hx + d * 0.5, hy, R0, voidish ? C[0] : C[7]);
+      circle(hx + d * R0 * 0.35, hy - 0.5, R0 * 0.5, voidish ? C[2] : WHITE);
+    }
+    arcs(st, ph, (f, a) => [hx, hy, hx - d * (8 + rnd[(f * 3 + a) & 255] * p.trail * 0.6), hy + (rnd[(f * 5 + a) & 255] - 0.5) * 12]);
+    glow(hx, hy, R0 * 6, C[6], 0.7);
+  }
+  const LOOP_DRAW = { aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune, torch: drawTorch, orb: drawOrb, shield: drawShield, missile: drawMissile };
 
   function composite(view, img) {
     if (view === 'clear') return compositeClear(img);
@@ -1333,7 +1857,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return out;
   }
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const exportName = (rec, o) => `${slug(rec.name)}-s${rec.seed}-${o.fps}fps-${o.scale}x`;
+  const exportName = (rec, o) => `${slug(rec.name)}-s${rec.seed}${rec.edits ? '-edited' : ''}-${o.fps}fps-${o.scale}x`;
   // the sheet is a near-square grid; its JSON is Aseprite's array format plus an "effect" block
   const sheetGrid = (n) => { const cols = Math.ceil(Math.sqrt((n * H) / W)); return { cols, rows: Math.ceil(n / cols) }; };
   function spriteSheet(rec, o) {
@@ -1457,7 +1981,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
 
   // ---------------------------------------------------------------- the page
-  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return (a[0] % 2147483646) + 1; };
+  // new effects come from the second generation, which also holds every first-generation shape and material
+  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return GEN1 + 1 + (a[0] % (MAX_SEED - GEN1)); };
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const off = document.createElement('canvas'); off.width = W; off.height = H;
   const octx = off.getContext('2d'), img = octx.createImageData(W, H);
@@ -1469,12 +1994,24 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   let main, dirty = true, last = null;
 
   const round2 = (v) => (typeof v === 'number' && !Number.isInteger(v) ? +v.toFixed(2) : v);
-  const recipeOf = (rec) => ({ seed: rec.seed, name: rec.name, shape: rec.shape, material: rec.mat, palette: rec.pal.map(toHex), params: Object.fromEntries(Object.entries(rec.p).map(([k, v]) => [k, round2(v)])) });
-  function load(rec, push = true) {
-    if (push && main) { history.push(main.rec); if (history.length > 50) history.shift(); }
+  const recipeOf = (rec) => ({ seed: rec.seed, name: rec.name, shape: rec.shape, material: rec.mat, palette: rec.pal.map(toHex), params: Object.fromEntries(Object.entries(rec.p).map(([k, v]) => [k, round2(v)])), ...(rec.edits ? { edits: rec.edits } : {}) });
+  // the seed's own recipe, and the edits on top of it; main plays the result
+  let base = null, edits = {};
+  function load(rec, push = true, ed = {}) {
+    if (push && main) { history.push({ base, edits }); if (history.length > 50) history.shift(); }
+    const { edits: _baked, ...clean } = rec;
+    base = clean; edits = { ...ed };
+    show(false);
+    buildEditor();
+  }
+  // apply the edits and put the result on screen; keepTime holds the playhead while a control moves
+  function show(keepTime) {
+    const rec = applyEdits(base, edits), tt = keepTime && main ? Math.min(main.tt, rec.total) : null;
     main = makePlayer(rec);
-    if (reduce) main.tt = restTime(rec);
+    if (tt !== null) main.tt = tt;
+    else if (reduce) main.tt = restTime(rec);
     $('back').disabled = !history.length;
+    $('edited').hidden = !rec.edits;
     const words = rec.name.split(' ');
     $('name').innerHTML = `${words.slice(0, -1).join(' ')} <span>${words[words.length - 1]}</span>`;
     $('seed-in').value = rec.seed;
@@ -1488,8 +2025,45 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     $('copy-msg').textContent = '';
     showExportInfo();
     drawDither(rec.pal[6]);
-    try { window.history.replaceState(null, '', '#s' + rec.seed); } catch (e) { /* the link just won't carry the seed */ }
+    try { window.history.replaceState(null, '', '#s' + rec.seed + encodeEdits(edits)); } catch (e) { /* the link just won't carry the seed */ }
     dirty = true;
+  }
+
+  // the edit panel
+  const fmtKnob = (k, v) => (k.fmt ? k.fmt(v) : `×${(+v).toFixed(2)}`);
+  const capital = (w) => w[0].toUpperCase() + w.slice(1);
+  function showHueSat() {
+    $('ed-hue-v').textContent = `${$('ed-hue').value}°`;
+    $('ed-sat-v').textContent = `×${(+$('ed-sat').value).toFixed(2)}`;
+  }
+  function refreshSwatches() {
+    $('ed-swatches').querySelectorAll('input').forEach((el, i) => {
+      if (el !== document.activeElement) el.value = toHex(main.rec.pal[i]);
+      el.classList.toggle('set', !!edits['c' + i]);
+    });
+  }
+  function buildEditor() {
+    const { shape, mat, p } = editBase(base, edits), opt = (v, label) => `<option value="${v}">${label}</option>`;
+    $('ed-shape').innerHTML = `<optgroup label="One-shots">${ALL_SHOTS.map((v) => opt(v, NOUN[v])).join('')}</optgroup><optgroup label="Loops">${ALL_LOOPS.map((v) => opt(v, NOUN[v])).join('')}</optgroup>`;
+    $('ed-shape').value = shape;
+    $('ed-mat').innerHTML = ALL_MATS.map((v) => opt(v, `${capital(v)} · ${ADJ[v]}`)).join('');
+    $('ed-mat').value = mat;
+    $('ed-hue').value = edits.hue || 0;
+    $('ed-sat').value = edits.sat ?? 1;
+    showHueSat();
+    $('ed-swatches').innerHTML = main.rec.pal.map((c, i) => `<input type="color" data-i="${i}" value="${toHex(c)}" aria-label="Palette step ${i + 1} of 8">`).join('');
+    refreshSwatches();
+    $('ed-knobs').innerHTML = KNOBS.filter((k) => knobFits(k, shape, p)).map((k) => {
+      const cur = k.id in edits ? edits[k.id] : k.abs ? p[k.abs] : k.pick ? p[k.pick] : 1;
+      if (k.pick) return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label}</label><select id="kn-${k.id}" data-k="${k.id}">${k.values.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${k.names(v)}</option>`).join('')}</select></div>`;
+      return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label} <output>${fmtKnob(k, cur)}</output></label><input type="range" id="kn-${k.id}" data-k="${k.id}" min="${k.min}" max="${k.max}" step="${k.step || 0.05}" value="${cur}"></div>`;
+    }).join('');
+  }
+  // set or clear one edit; a value back at the seed's own is dropped, so the link stays short
+  function edit(key, v, rebuild) {
+    if (v === undefined) delete edits[key]; else edits[key] = v;
+    show(true);
+    if (rebuild) buildEditor(); else refreshSwatches();
   }
   // a still frame worth showing when motion is reduced
   function restTime(rec) { return rec.loop ? rec.p.period * 0.3 : rec.p.wind + rec.p.stop + 0.3; }
@@ -1510,11 +2084,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const phaseOf = (pl, s) => {
     const rec = pl.rec;
     if (rec.loop) return `Loop · repeats every ${rec.p.period} s with no seam`;
-    const W0 = rec.p.wind, e = s - W0, tail = rec.shape === 'geyser' ? rec.p.erupt : 0;
-    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows' }[rec.shape];
+    const W0 = rec.p.wind, e = s - W0, tail = sustain(rec);
+    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor' }[rec.shape];
     if (S.hitstop && pl.tt < W0 + rec.p.stop) return 'Contact · hit-stop and white hero frame';
     if (e < 0.15) return 'Release · flare, rings, burst';
-    if (e < 1.0 + tail) return rec.shape === 'geyser' && e < tail ? 'Release · the column erupts' : 'Spread · particles fly, bounce and cool';
+    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
     if (e < 2.2 + tail) return 'Hold · embers drift, light fades';
     if (e < 3.2 + tail) return 'Decay · the last of it clears';
     return 'Empty · a one-shot ends with nothing left';
@@ -1603,14 +2177,33 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   $('auto').addEventListener('change', (e) => { S.auto = e.target.checked; });
   $('gen').addEventListener('click', () => { generate(); S.playing = true; setPlayLabel(); });
   $('vary').addEventListener('click', () => { load(vary(main.rec, randomSeed())); S.playing = true; setPlayLabel(); });
-  $('back').addEventListener('click', () => { const rec = history.pop(); if (rec) load(rec, false); });
+  $('back').addEventListener('click', () => { const h = history.pop(); if (h) load(h.base, false, h.edits); });
+  $('ed-shape').addEventListener('change', (e) => {
+    const shape = e.target.value, { p } = editBase(base, { ...edits, shape });
+    // knobs the new shape has no use for leave the edits, and the link
+    for (const k of KNOBS) if (!knobFits(k, shape, p)) delete edits[k.id];
+    edit('shape', shape === base.shape ? undefined : shape, true);
+  });
+  $('ed-mat').addEventListener('change', (e) => edit('mat', e.target.value === base.mat ? undefined : e.target.value, true));
+  $('ed-hue').addEventListener('input', (e) => { edit('hue', +e.target.value || undefined); showHueSat(); });
+  $('ed-sat').addEventListener('input', (e) => { const v = +e.target.value; edit('sat', v === 1 ? undefined : v); showHueSat(); });
+  $('ed-swatches').addEventListener('input', (e) => { if (e.target.dataset.i) edit('c' + e.target.dataset.i, e.target.value.slice(1).toLowerCase()); });
+  $('ed-knobs').addEventListener('input', (e) => {
+    const k = KNOBS.find((q) => q.id === e.target.dataset.k);
+    if (!k) return;
+    const v = +e.target.value, own = k.mult ? 1 : editBase(base, edits).p[k.abs || k.pick];
+    const out = e.target.parentElement.querySelector('output');
+    if (out) out.textContent = fmtKnob(k, v);
+    edit(k.id, v === own ? undefined : v);
+  });
+  $('ed-reset').addEventListener('click', () => { edits = {}; show(true); buildEditor(); });
   $('play').addEventListener('click', () => { S.playing = !S.playing; setPlayLabel(); });
   $('scrub').addEventListener('input', (e) => { main.tt = +e.target.value; S.playing = false; setPlayLabel(); dirty = true; });
   $('more').addEventListener('click', fillThumbs);
   $('seed-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const n = parseInt($('seed-in').value, 10);
-    if (Number.isFinite(n) && n > 0) { generate(Math.min(n, 2147483647)); S.playing = true; setPlayLabel(); }
+    if (Number.isFinite(n) && n > 0) { generate(Math.min(n, MAX_SEED)); S.playing = true; setPlayLabel(); }
     else $('seed-in').value = main.rec.seed;
   });
   $('copy').addEventListener('click', () => {
@@ -1665,13 +2258,21 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   $('x-json').addEventListener('click', () => runExport('json'));
   $('x-gif').addEventListener('click', () => runExport('gif'));
 
+  // #s<seed>, optionally followed by ~edits
+  const parseLink = () => {
+    const m = /^#s(\d+)(?:~(.*))?$/.exec(location.hash);
+    if (!m) return null;
+    let text = m[2] || '';
+    try { text = decodeURIComponent(text); } catch (e) { /* keep it as it came */ }
+    return { seed: Math.min(+m[1], MAX_SEED) || 1, ed: decodeEdits(text) };
+  };
   window.addEventListener('hashchange', () => {
-    const m = /^#s(\d+)$/.exec(location.hash);
-    if (m && +m[1] !== main.rec.seed) load(makeRecipe(+m[1]));
+    const l = parseLink();
+    if (l && (l.seed !== base.seed || encodeEdits(l.ed) !== encodeEdits(edits))) load(makeRecipe(l.seed), true, l.ed);
   });
 
-  const m = /^#s(\d+)$/.exec(location.hash);
-  load(makeRecipe(m ? Math.min(+m[1], 2147483647) || 1 : 20482), false);
+  const link = parseLink();
+  load(makeRecipe(link ? link.seed : 20482), false, link ? link.ed : {});
   setPlayLabel();
   fillThumbs();
   requestAnimationFrame(frame);
