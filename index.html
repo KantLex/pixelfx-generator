@@ -220,6 +220,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         <div class="seg" role="radiogroup" aria-label="Look">
           <input type="radio" name="look" id="look-pixel" value="pixel" checked><label for="look-pixel">Pixel</label>
           <input type="radio" name="look" id="look-cel" value="cel"><label for="look-cel">Cel outline</label>
+          <input type="radio" name="look" id="look-handheld" value="handheld"><label for="look-handheld">Handheld</label>
         </div></div>
     </div>
     <details class="recipe edit" id="edit-box" open>
@@ -397,8 +398,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         <div><p>Anticipation, a white hero frame, release, spread, hold and a long decay. On contact everything freezes for a few hundredths of a second while the screen shakes. Without the freeze, the same effect feels weightless.</p></div>
       </div>
       <div class="note">
-        <h3>A second look<span class="try">Try: Look → Cel outline</span></h3>
-        <div><p>The same buffers can be finished another way. In the cel look, anything at least a third covered becomes a solid shape with a one-pixel ink outline, and glow is cut into three flat bands instead of falling off smoothly. Smoke and vapour become solid outlined puffs. Nothing about the effect changes, only how its last step is drawn.</p></div>
+        <h3>Other looks<span class="try">Try: Look → Cel outline, Handheld</span></h3>
+        <div><p>The same buffers can be finished another way. In the cel look, anything at least a third covered becomes a solid shape with a one-pixel ink outline, and glow is cut into three flat bands instead of falling off smoothly. Smoke and vapour become solid outlined puffs. The handheld look maps every pixel's brightness onto four shades of one green, dithering between them. Nothing about the effect changes, only how its last step is drawn.</p></div>
       </div>
       <div class="note">
         <h3>Depth with flat tricks</h3>
@@ -434,8 +435,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const LR = new Float32Array(N), LG = new Float32Array(N), LB = new Float32Array(N);
   const BG = new Uint8ClampedArray(N * 3);
   let dither = true;
-  // the look the frame is finished in: 'pixel' (dither, smooth glow) or 'cel' (hard shapes, ink outlines, banded glow)
+  // the look the frame is finished in: 'pixel' (dither, smooth glow), 'cel' (hard shapes, ink outlines, banded glow)
+  // or 'handheld' (four shades of one tint, like an old handheld screen)
   let look = 'pixel';
+  const LOOKS = ['pixel', 'cel', 'handheld'];
 
   (function makeBackground() {
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
@@ -2455,6 +2458,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 
   function composite(view, img) {
     if (look === 'cel' && (view === 'final' || view === 'clear')) return compositeCel(img, view === 'clear');
+    if (look === 'handheld' && (view === 'final' || view === 'clear')) return compositeHandheld(img, view === 'clear');
     if (view === 'clear') return compositeClear(img);
     const d = img.data;
     for (let i = 0; i < N; i++) {
@@ -2493,6 +2497,29 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         continue;
       }
       d[o] = r + LR[i] * k * 255; d[o + 1] = g + LG[i] * k * 255; d[o + 2] = b + LB[i] * k * 255; d[o + 3] = a;
+    }
+  }
+  // the handheld look. The finished frame's brightness is mapped onto four shades of one green, the darkest tones held down,
+  // with the 4 x 4 Bayer pattern deciding between neighbouring shades, so glows and smoke still fade in steps.
+  const SHADES = [[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]];
+  const shadeOf = (lum, x, y) => { const v = Math.pow(clamp((lum - 0.11) * 1.5), 1.15) * 3, base = Math.floor(v); return Math.min(3, base + (v - base > BAYER[((y & 3) << 2) | (x & 3)] ? 1 : 0)); };
+  function compositeHandheld(img, clear) {
+    const d = img.data;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x, o = i * 4, a = CA[i];
+      let r, g, b, alpha = 1;
+      if (clear) {
+        // on a clear ground, coverage is dithered too: a pixel is either a shade or nothing
+        const m = Math.min(1, Math.max(LR[i], LG[i], LB[i]));
+        alpha = a + (1 - a) * m;
+        if (alpha <= BAYER[((y & 3) << 2) | (x & 3)]) { d[o] = d[o + 1] = d[o + 2] = d[o + 3] = 0; continue; }
+        r = (CR[i] * a + LR[i] * 255) / alpha; g = (CG[i] * a + LG[i] * 255) / alpha; b = (CB[i] * a + LB[i] * 255) / alpha;
+      } else {
+        const j = i * 3;
+        r = BG[j] * (1 - a) + CR[i] * a + LR[i] * 255; g = BG[j + 1] * (1 - a) + CG[i] * a + LG[i] * 255; b = BG[j + 2] * (1 - a) + CB[i] * a + LB[i] * 255;
+      }
+      const c = SHADES[shadeOf(Math.min(1, (0.299 * r + 0.587 * g + 0.114 * b) / 255), x, y)];
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
     }
   }
   // the effect alone on a clear ground: glow turns into alpha, exact over black and close over any dark background
@@ -2584,7 +2611,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return out;
   }
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const exportName = (rec, o) => `${slug(rec.name)}-s${rec.seed}${rec.edits ? '-edited' : ''}${o.look === 'cel' ? '-cel' : ''}-${o.fps}fps-${o.scale}x`;
+  const exportName = (rec, o) => `${slug(rec.name)}-s${rec.seed}${rec.edits ? '-edited' : ''}${o.look && o.look !== 'pixel' ? '-' + o.look : ''}-${o.fps}fps-${o.scale}x`;
   // the sheet is a near-square grid; its JSON is Aseprite's array format plus an "effect" block
   const sheetGrid = (n) => { const cols = Math.ceil(Math.sqrt((n * H) / W)); return { cols, rows: Math.ceil(n / cols) }; };
   function spriteSheet(rec, o) {
@@ -2760,7 +2787,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const linkHash = () => '#s' + base.seed + encodeEdits(look !== 'pixel' ? { ...edits, look } : edits);
   function setLink() { try { window.history.replaceState(null, '', linkHash()); } catch (e) { /* the link just won't carry the seed */ } }
   function setLook(v) {
-    look = v === 'cel' ? 'cel' : 'pixel';
+    look = LOOKS.includes(v) ? v : 'pixel';
     const el = $('look-' + look);
     if (el) el.checked = true;
     for (const th of thumbs) th.dirty = true;

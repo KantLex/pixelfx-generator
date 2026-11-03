@@ -71,7 +71,7 @@ in the middle, and the hue leans toward yellow in the highlights.
 - Type a seed, or share the link: it ends in `#s` plus the seed and reopens the same effect.
 - Copy the recipe as JSON.
 - Switch off the light buffer, the dither or the hit-stop to see what each one does.
-- Switch the **look** between **Pixel** and **Cel outline**.
+- Switch the **look** between **Pixel**, **Cel outline** and **Handheld**.
 - Edit the effect by hand: shape, material, palette and timing.
 - Export the effect as a sprite sheet with frame data, or as a GIF.
 
@@ -97,16 +97,18 @@ include the edits, and exported files get `-edited` in their name. **Reset to th
 
 ## Looks
 
-The same effects can be finished in two looks. The look only changes how a frame is drawn at the end, so every seed,
+The same effects can be finished in three looks. The look only changes how a frame is drawn at the end, so every seed,
 edit and effect works in both.
 
 - **Pixel** (the default): partial transparency breaks into a Bayer dither and glow falls off smoothly.
 - **Cel outline**: a toon style. Anything at least a third covered becomes a solid shape, every solid shape gets a
   one-pixel ink outline, glow is cut into three flat bands, and smoke and vapour turn into solid outlined puffs. The
   backdrop is lifted a little so the ink reads against it.
+- **Handheld**: four shades of one green, like an old handheld screen. Each pixel's brightness picks a shade, and the
+  4 × 4 Bayer pattern chooses between neighbouring shades, so glow and smoke still fade in dithered steps.
 
 The look is kept in the link (`#s20482~look:cel`), stays on as you generate new effects, and applies to the
-variations strip and to exports, whose files get `-cel` in their name and `"look"` in their JSON.
+variations strip and to exports, whose files get the look in their name (`-cel`, `-handheld`) and `"look"` in their JSON.
 
 ## Exporting
 
