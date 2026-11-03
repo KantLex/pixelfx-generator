@@ -77,6 +77,8 @@ button:hover { border-color: var(--muted); }
 button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .45; cursor: default; }
+.export-go { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; }
+.export-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
 details.recipe { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
 details.recipe summary { cursor: pointer; font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 details.recipe[open] summary { margin-bottom: 10px; }
@@ -193,6 +195,35 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <input type="radio" name="speed" id="speed-q" value="0.25"><label for="speed-q">¼×</label>
         </div></div>
     </div>
+    <div class="controls export" role="group" aria-label="Export">
+      <div class="group"><span class="lbl">Export frame rate</span>
+        <div class="seg" role="radiogroup" aria-label="Export frame rate">
+          <input type="radio" name="xfps" id="xfps-12" value="12"><label for="xfps-12">12</label>
+          <input type="radio" name="xfps" id="xfps-24" value="24" checked><label for="xfps-24">24</label>
+          <input type="radio" name="xfps" id="xfps-30" value="30"><label for="xfps-30">30 fps</label>
+        </div></div>
+      <div class="group"><span class="lbl">Export scale</span>
+        <div class="seg" role="radiogroup" aria-label="Export scale">
+          <input type="radio" name="xscale" id="xscale-1" value="1" checked><label for="xscale-1">1×</label>
+          <input type="radio" name="xscale" id="xscale-2" value="2"><label for="xscale-2">2×</label>
+          <input type="radio" name="xscale" id="xscale-4" value="4"><label for="xscale-4">4×</label>
+        </div></div>
+      <div class="group"><span class="lbl">Sheet background</span>
+        <div class="seg" role="radiogroup" aria-label="Sprite sheet background">
+          <input type="radio" name="xbg" id="xbg-clear" value="clear" checked><label for="xbg-clear">Transparent</label>
+          <input type="radio" name="xbg" id="xbg-back" value="backdrop"><label for="xbg-back">Backdrop</label>
+        </div></div>
+      <div class="export-go">
+        <div class="export-row">
+          <button id="x-png" type="button">Sprite sheet PNG</button>
+          <button id="x-json" type="button">Sheet JSON</button>
+          <button id="x-gif" type="button">GIF</button>
+          <span class="caption" id="export-info"></span>
+        </div>
+        <span class="caption" id="export-msg" aria-live="polite"></span>
+        <p class="caption">Exports use the Partial alpha and Hit-stop settings above. A loop exports one period and repeats with no seam. A one-shot runs to its empty last frame, with one frame on contact. The GIF looks like the page. The sheet leaves out the screen shake so a game camera can do it, and its JSON gives the shake, the frame times and the recipe.</p>
+      </div>
+    </div>
     <details class="recipe">
       <summary>Recipe for this seed</summary>
       <div class="recipe-row">
@@ -261,7 +292,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <tr><th scope="row">Palettes</th><td>A curated ramp per effect, which callers can swap</td><td>A new hue-shifted ramp per seed, which can be locked while the shape changes</td></tr>
           <tr><th scope="row">Characters</th><td>A 3D-skeleton fighter with wind-ups, hit reactions and a target dummy</td><td>None</td></tr>
           <tr><th scope="row">Quality</th><td>Each effect held to a written quality bar and benchmarked against references</td><td>Uneven. Guard rails keep results readable, but nobody has reviewed a given seed</td></tr>
-          <tr><th scope="row">Using the output</th><td>Import into a browser game, or export PNG sprite sheets with Aseprite JSON, GIF or MP4</td><td>Plays in this page. Share by seed link or copy the recipe. This viewer blocks file downloads</td></tr>
+          <tr><th scope="row">Using the output</th><td>Import into a browser game, or export PNG sprite sheets with Aseprite JSON, GIF or MP4</td><td>Export a PNG sprite sheet with Aseprite-style JSON, or a GIF. Share by seed link or copy the recipe</td></tr>
           <tr><th scope="row">Learning</th><td>Docs, a checker and a written workflow for making new effects</td><td>Toggles that switch off the light buffer, the dither and the hit-stop so you can see what each does</td></tr>
         </tbody>
       </table>
@@ -274,6 +305,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <li>Generated palettes instead of four fixed ones.</li>
       <li>Locks and a Variation button, so you can keep what you like and change the rest.</li>
       <li>Six live variations at once, and an option to play a new effect after each one.</li>
+      <li>Export as a sprite sheet with frame data, or as a GIF.</li>
     </ul>
   </section>
 
@@ -1202,6 +1234,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const LOOP_DRAW = { aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune };
 
   function composite(view, img) {
+    if (view === 'clear') return compositeClear(img);
     const d = img.data;
     for (let i = 0; i < N; i++) {
       const a = CA[i];
@@ -1209,6 +1242,15 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       if (view !== 'light') { const j = i * 3; r = BG[j] * (1 - a) + CR[i] * a; g = BG[j + 1] * (1 - a) + CG[i] * a; b = BG[j + 2] * (1 - a) + CB[i] * a; }
       if (view !== 'color') { r += LR[i] * 255; g += LG[i] * 255; b += LB[i] * 255; }
       const o = i * 4; d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = 255;
+    }
+  }
+  // the effect alone on a clear ground: glow turns into alpha, exact over black and close over any dark background
+  function compositeClear(img) {
+    const d = img.data;
+    for (let i = 0; i < N; i++) {
+      const a = CA[i], m = Math.min(1, Math.max(LR[i], LG[i], LB[i])), oa = a + (1 - a) * m, o = i * 4;
+      if (oa <= 0) { d[o] = d[o + 1] = d[o + 2] = d[o + 3] = 0; continue; }
+      d[o] = (CR[i] * a + LR[i] * 255) / oa; d[o + 1] = (CG[i] * a + LG[i] * 255) / oa; d[o + 2] = (CB[i] * a + LB[i] * 255) / oa; d[o + 3] = oa * 255;
     }
   }
 
@@ -1235,6 +1277,184 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     composite(view, img);
     return s;
   }
+  // screen shake after contact, a whole-pixel camera offset
+  function shakeOf(rec, tt) {
+    const e = tt - rec.p.wind;
+    if (rec.loop || e < 0 || e >= 0.3) return [0, 0];
+    const amp = rec.p.shake * (1 - e / 0.3);
+    return [Math.round(Math.sin(tt * 97) * amp), Math.round(Math.cos(tt * 131) * amp * 0.6)];
+  }
+
+  // ---------------------------------------------------------------- export: frames, sprite sheet, GIF
+  // when each exported frame is taken. A loop is one period cut into whole frames, so it repeats with no seam.
+  // A one-shot runs to its empty last frame, with one frame landing on contact so the hero frame is never skipped.
+  function exportTimes(rec, fps) {
+    if (rec.loop) {
+      const n = Math.max(1, Math.round(rec.p.period * fps));
+      return { times: Array.from({ length: n }, (_, i) => (i * rec.p.period) / n), end: rec.p.period, contact: -1 };
+    }
+    const W0 = rec.p.wind, k = Math.floor(W0 * fps + 1e-9), times = [];
+    for (let i = 0; W0 + (i - k) / fps <= rec.total + 1e-9; i++) times.push(W0 + (i - k) / fps);
+    return { times, end: times[times.length - 1] + 1 / fps, contact: k };
+  }
+  // whole-unit frame lengths (ms, or 1/100 s for GIF) that add up to the exact running time
+  const durations = (times, end, unit) => times.map((t, i) => Math.round((i + 1 < times.length ? times[i + 1] : end) * unit) - Math.round(t * unit));
+  // the page's shake: the frame drawn again, offset, over itself
+  function shift(im, sx, sy) {
+    if (!sx && !sy) return;
+    const src = im.data.slice(), d = im.data;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const fx = x - sx, fy = y - sy;
+      if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+      const o = (fy * W + fx) * 4;
+      d.set(src.subarray(o, o + 4), (y * W + x) * 4);
+    }
+  }
+  function captureFrames(rec, o) {
+    const { times, end, contact } = exportTimes(rec, o.fps), pl = makePlayer(rec), frames = [];
+    for (const t of times) {
+      const im = new ImageData(W, H);
+      pl.tt = t; dither = o.dither;
+      renderPlayer(pl, o.clear ? 'clear' : 'final', o.hitstop, im);
+      if (o.shake) shift(im, ...shakeOf(rec, t));
+      frames.push(im);
+    }
+    return { frames, times, end, contact };
+  }
+  // nearest-neighbour upscale of a w × h buffer with bpp bytes per pixel
+  function upscale(src, w, h, s, bpp) {
+    if (s === 1) return src;
+    const row = w * s * bpp, out = new src.constructor(row * h * s);
+    for (let y = 0; y < h; y++) {
+      const o = y * s * row;
+      for (let x = 0; x < w; x++) for (let k = 0; k < s; k++) for (let c = 0; c < bpp; c++) out[o + (x * s + k) * bpp + c] = src[(y * w + x) * bpp + c];
+      for (let k = 1; k < s; k++) out.copyWithin(o + k * row, o, o + row);
+    }
+    return out;
+  }
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const exportName = (rec, o) => `${slug(rec.name)}-s${rec.seed}-${o.fps}fps-${o.scale}x`;
+  // the sheet is a near-square grid; its JSON is Aseprite's array format plus an "effect" block
+  const sheetGrid = (n) => { const cols = Math.ceil(Math.sqrt((n * H) / W)); return { cols, rows: Math.ceil(n / cols) }; };
+  function spriteSheet(rec, o) {
+    const cap = captureFrames(rec, { ...o, shake: false }), n = cap.frames.length, fw = W * o.scale, fh = H * o.scale;
+    const { cols, rows } = sheetGrid(n), cv = document.createElement('canvas');
+    cv.width = cols * fw; cv.height = rows * fh;
+    const c = cv.getContext('2d'), ms = durations(cap.times, cap.end, 1000), base = exportName(rec, o) + (o.clear ? '' : '-backdrop');
+    const frames = cap.frames.map((im, i) => {
+      const x = (i % cols) * fw, y = Math.floor(i / cols) * fh;
+      c.putImageData(new ImageData(upscale(im.data, W, H, o.scale, 4), fw, fh), x, y);
+      return { filename: `${base} ${i}`, frame: { x, y, w: fw, h: fh }, rotated: false, trimmed: false, spriteSourceSize: { x: 0, y: 0, w: fw, h: fh }, sourceSize: { w: fw, h: fh }, duration: ms[i] };
+    });
+    const json = {
+      frames,
+      meta: {
+        app: 'https://github.com/KantLex/pixelfx-generator', version: '1', image: base + '.png', format: 'RGBA8888',
+        size: { w: cv.width, h: cv.height }, scale: String(o.scale), frameTags: [{ name: rec.name, from: 0, to: n - 1, direction: 'forward' }],
+      },
+      effect: {
+        name: rec.name, seed: rec.seed, loop: rec.loop, fps: o.fps, frameCount: n, seconds: +(cap.end - cap.times[0]).toFixed(3),
+        background: o.clear ? 'transparent' : 'backdrop', partialAlpha: o.dither ? 'dither' : 'blend', hitStop: o.hitstop,
+        contactFrame: rec.loop ? null : cap.contact,
+        // left out of the frames: a game should move its camera instead
+        cameraShake: rec.loop ? null : { fromFrame: cap.contact, seconds: 0.3, pixels: +(rec.p.shake * o.scale).toFixed(2), falloff: 'linear' },
+        recipe: recipeOf(rec),
+      },
+    };
+    return { canvas: cv, json, base };
+  }
+
+  // GIF89a: one global palette, LZW-coded full frames, looping forever
+  const keyOf = (d, o) => (d[o] << 16) | (d[o + 1] << 8) | d[o + 2];
+  function nearest(pal, k) {
+    const r = k >> 16, g = (k >> 8) & 255, b = k & 255;
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < pal.length; i++) {
+      const p = pal[i], dr = (p >> 16) - r, dg = ((p >> 8) & 255) - g, db = (p & 255) - b, d = 2 * dr * dr + 4 * dg * dg + 3 * db * db;
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+  // repeatedly split the box with the widest channel at its pixel-weighted median, then average each box
+  function medianCut(keys, count, max) {
+    const boxes = [keys];
+    while (boxes.length < max) {
+      let best = -1, range = 0, sh = 0;
+      boxes.forEach((b, i) => {
+        if (b.length < 2) return;
+        for (const s of [16, 8, 0]) {
+          let lo = 255, hi = 0;
+          for (const k of b) { const v = (k >> s) & 255; if (v < lo) lo = v; if (v > hi) hi = v; }
+          if (hi - lo > range) { range = hi - lo; best = i; sh = s; }
+        }
+      });
+      if (best < 0) break;
+      const b = boxes[best].sort((p, q) => ((p >> sh) & 255) - ((q >> sh) & 255));
+      let total = 0, acc = 0, cut = 1;
+      for (const k of b) total += count.get(k);
+      for (let i = 0; i < b.length - 1; i++) { acc += count.get(b[i]); if (acc >= total / 2) { cut = i + 1; break; } }
+      boxes.splice(best, 1, b.slice(0, cut), b.slice(cut));
+    }
+    return boxes.map((b) => {
+      let r = 0, g = 0, bl = 0, n = 0;
+      for (const k of b) { const w = count.get(k); r += (k >> 16) * w; g += ((k >> 8) & 255) * w; bl += (k & 255) * w; n += w; }
+      return (Math.round(r / n) << 16) | (Math.round(g / n) << 8) | Math.round(bl / n);
+    });
+  }
+  // exact when the frames use 256 colours or fewer, which dithered effects on the backdrop often do
+  function quantize(frames) {
+    const count = new Map();
+    for (const im of frames) for (let o = 0; o < im.data.length; o += 4) { const k = keyOf(im.data, o); count.set(k, (count.get(k) || 0) + 1); }
+    const keys = [...count.keys()], exact = keys.length <= 256, pal = exact ? keys : medianCut(keys, count, 256), map = new Map();
+    keys.forEach((k, i) => map.set(k, exact ? i : nearest(pal, k)));
+    const index = (im) => { const out = new Uint8Array(N); for (let i = 0; i < N; i++) out[i] = map.get(keyOf(im.data, i * 4)); return out; };
+    return { pal, index, exact };
+  }
+  function byteWriter() {
+    let buf = new Uint8Array(1 << 16), n = 0;
+    const byte = (b) => { if (n === buf.length) { const nb = new Uint8Array(n * 2); nb.set(buf); buf = nb; } buf[n++] = b; };
+    return { byte, u16: (v) => { byte(v & 255); byte(v >> 8); }, text: (s) => { for (const ch of s) byte(ch.charCodeAt(0)); }, bytes: () => buf.subarray(0, n) };
+  }
+  // variable-width LZW in 255-byte sub-blocks; a generation stamp clears the string table without refilling it
+  function lzw(out, idx, minSize, table) {
+    const clearCode = 1 << minSize, eoi = clearCode + 1, block = [];
+    let size = minSize + 1, next = eoi + 1, cur = 0, bits = 0;
+    table.gen++;
+    const emit = (code) => {
+      cur |= code << bits; bits += size;
+      while (bits >= 8) { block.push(cur & 255); cur >>>= 8; bits -= 8; if (block.length === 255) { out.byte(255); block.forEach(out.byte); block.length = 0; } }
+    };
+    out.byte(minSize);
+    emit(clearCode);
+    let prefix = idx[0];
+    for (let i = 1; i < idx.length; i++) {
+      const k = idx[i], key = (prefix << 8) | k;
+      if (table.stamp[key] === table.gen) { prefix = table.code[key]; continue; }
+      emit(prefix);
+      if (next === 4096) { emit(clearCode); next = eoi + 1; size = minSize + 1; table.gen++; }
+      else { if (next >= 1 << size) size++; table.stamp[key] = table.gen; table.code[key] = next++; }
+      prefix = k;
+    }
+    emit(prefix); emit(eoi);
+    if (bits > 0) block.push(cur & 255);
+    if (block.length) { out.byte(block.length); block.forEach(out.byte); }
+    out.byte(0);
+  }
+  function encodeGif(rec, o) {
+    const cap = captureFrames(rec, { ...o, clear: false, shake: true }), q = quantize(cap.frames);
+    const bits = Math.max(2, Math.ceil(Math.log2(q.pal.length))), fw = W * o.scale, fh = H * o.scale, out = byteWriter();
+    out.text('GIF89a'); out.u16(fw); out.u16(fh); out.byte(0xf0 | (bits - 1)); out.byte(0); out.byte(0);
+    for (let i = 0; i < 1 << bits; i++) { const p = q.pal[i] || 0; out.byte(p >> 16); out.byte((p >> 8) & 255); out.byte(p & 255); }
+    out.byte(0x21); out.byte(0xff); out.byte(11); out.text('NETSCAPE2.0'); out.byte(3); out.byte(1); out.u16(0); out.byte(0);
+    const cs = durations(cap.times, cap.end, 100), table = { stamp: new Int32Array(1 << 20), code: new Uint16Array(1 << 20), gen: 0 };
+    cap.frames.forEach((im, i) => {
+      out.byte(0x21); out.byte(0xf9); out.byte(4); out.byte(0x04); out.u16(cs[i]); out.byte(0); out.byte(0);
+      out.byte(0x2c); out.u16(0); out.u16(0); out.u16(fw); out.u16(fh); out.byte(0);
+      lzw(out, upscale(q.index(im), W, H, o.scale, 1), bits, table);
+    });
+    out.byte(0x3b);
+    return { blob: new Blob([out.bytes()], { type: 'image/gif' }), frames: cap.frames.length, exact: q.exact };
+  }
 
   // ---------------------------------------------------------------- the page
   const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return (a[0] % 2147483646) + 1; };
@@ -1248,6 +1468,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const history = [];
   let main, dirty = true, last = null;
 
+  const round2 = (v) => (typeof v === 'number' && !Number.isInteger(v) ? +v.toFixed(2) : v);
+  const recipeOf = (rec) => ({ seed: rec.seed, name: rec.name, shape: rec.shape, material: rec.mat, palette: rec.pal.map(toHex), params: Object.fromEntries(Object.entries(rec.p).map(([k, v]) => [k, round2(v)])) });
   function load(rec, push = true) {
     if (push && main) { history.push(main.rec); if (history.length > 50) history.shift(); }
     main = makePlayer(rec);
@@ -1262,9 +1484,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     root.setProperty('--accent-ink', toHex(rec.pal[0]));
     $('ramp').innerHTML = rec.pal.map((c) => `<div style="background:${toHex(c)}"></div>`).join('');
     $('ramp-hex').innerHTML = rec.pal.map((c) => `<span>${toHex(c).slice(1)}</span>`).join('');
-    const round = (v) => (typeof v === 'number' && !Number.isInteger(v) ? +v.toFixed(2) : v);
-    $('recipe-json').textContent = JSON.stringify({ seed: rec.seed, name: rec.name, shape: rec.shape, material: rec.mat, palette: rec.pal.map(toHex), params: Object.fromEntries(Object.entries(rec.p).map(([k, v]) => [k, round(v)])) }, null, 1);
+    $('recipe-json').textContent = JSON.stringify(recipeOf(rec), null, 1);
     $('copy-msg').textContent = '';
+    showExportInfo();
     drawDither(rec.pal[6]);
     try { window.history.replaceState(null, '', '#s' + rec.seed); } catch (e) { /* the link just won't carry the seed */ }
     dirty = true;
@@ -1302,9 +1524,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     dither = $('alpha-dither').checked;
     const s = renderPlayer(main, S.view, S.hitstop, img);
     octx.putImageData(img, 0, 0);
-    const e = main.tt - main.rec.p.wind;
-    let sx = 0, sy = 0;
-    if (!main.rec.loop && e >= 0 && e < 0.3) { const amp = main.rec.p.shake * (1 - e / 0.3); sx = Math.round(Math.sin(main.tt * 97) * amp); sy = Math.round(Math.cos(main.tt * 131) * amp * 0.6); }
+    const [sx, sy] = shakeOf(main.rec, main.tt);
     ctx.drawImage(off, 0, 0);
     if (sx || sy) ctx.drawImage(off, sx, sy);
     $('phase').textContent = phaseOf(main, s);
@@ -1399,6 +1619,52 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const fallback = () => { const r = document.createRange(); r.selectNodeContents($('recipe-json')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copy-msg').textContent = 'Selected. Press Ctrl+C or ⌘C to copy.'; };
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (err) { fallback(); }
   });
+  // export
+  const pick = (name) => document.querySelector(`input[name=${name}]:checked`).value;
+  const exportOpts = () => ({ fps: +pick('xfps'), scale: +pick('xscale'), clear: pick('xbg') === 'clear', dither: $('alpha-dither').checked, hitstop: S.hitstop });
+  function showExportInfo() {
+    const o = exportOpts(), { times, end } = exportTimes(main.rec, o.fps), n = times.length, { cols, rows } = sheetGrid(n);
+    $('export-info').textContent = `${n} frames · ${(end - times[0]).toFixed(2)} s · sheet ${cols * W * o.scale} × ${rows * H * o.scale} px`;
+    $('export-msg').textContent = '';
+  }
+  function save(blob, name) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  }
+  async function runExport(kind) {
+    const rec = main.rec, o = exportOpts(), msg = $('export-msg');
+    msg.textContent = kind === 'gif' ? 'Encoding the GIF…' : 'Drawing the frames…';
+    await new Promise((r) => setTimeout(r, 30)); // let the message paint first
+    try {
+      if (kind === 'gif') {
+        const g = encodeGif(rec, o), name = exportName(rec, o) + '.gif';
+        save(g.blob, name);
+        msg.textContent = `Downloading ${name} · ${g.frames} frames · ${Math.ceil(g.blob.size / 1024)} KB${g.exact ? '' : ' · colours reduced to 256'}`;
+      } else {
+        const sh = spriteSheet(rec, o);
+        if (kind === 'json') {
+          save(new Blob([JSON.stringify(sh.json, null, 1)], { type: 'application/json' }), sh.base + '.json');
+          msg.textContent = `Downloading ${sh.base}.json`;
+        } else {
+          const blob = await new Promise((r) => sh.canvas.toBlob(r, 'image/png'));
+          // some browsers, iOS Safari in particular, cap canvas size and hand back nothing
+          if (!blob) throw new Error('this browser cannot make a sheet that large. Try a lower scale or frame rate.');
+          save(blob, sh.base + '.png');
+          msg.textContent = `Downloading ${sh.base}.png · ${sh.canvas.width} × ${sh.canvas.height} px`;
+        }
+      }
+    } catch (err) { msg.textContent = `Export failed: ${err.message}`; }
+    dirty = true;
+  }
+  on('xfps', showExportInfo);
+  on('xscale', showExportInfo);
+  on('xbg', () => {});
+  $('x-png').addEventListener('click', () => runExport('png'));
+  $('x-json').addEventListener('click', () => runExport('json'));
+  $('x-gif').addEventListener('click', () => runExport('gif'));
+
   window.addEventListener('hashchange', () => {
     const m = /^#s(\d+)$/.exec(location.hash);
     if (m && +m[1] !== main.rec.seed) load(makeRecipe(+m[1]));

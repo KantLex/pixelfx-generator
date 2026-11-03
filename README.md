@@ -30,6 +30,24 @@ in the middle, and the hue leans toward yellow in the highlights.
 - Type a seed, or share the link: it ends in `#s` plus the seed and reopens the same effect.
 - Copy the recipe as JSON.
 - Switch off the light buffer, the dither or the hit-stop to see what each one does.
+- Export the effect as a sprite sheet with frame data, or as a GIF.
+
+## Exporting
+
+Pick a frame rate (12, 24 or 30 fps) and a scale (1×, 2× or 4×), then download:
+
+- **Sprite sheet PNG.** The frames in a near-square grid, on a transparent ground or on the page's backdrop. On a
+  transparent ground the glow becomes alpha, which is exact over black and close over any dark background.
+- **Sheet JSON.** Aseprite's array format (frame rects, per-frame durations in milliseconds, one frame tag), so
+  engines and importers that read Aseprite sheets can load it. An extra `effect` block gives the fps, the loop
+  flag, the contact frame, the camera shake and the full recipe.
+- **GIF.** Looks like the page, backdrop and screen shake included, and loops forever. It uses one palette of up to
+  256 colours, reduced by median cut when the effect has more.
+
+A loop exports exactly one period and repeats with no seam. A one-shot runs to its empty last frame, and one frame
+always lands on contact so the white hero frame is never skipped. The sheet leaves the screen shake out so a game
+can move its camera instead. Exports follow the page's dither and hit-stop settings. Frame lengths are rounded to
+whole milliseconds (or hundredths of a second in the GIF) but always add up to the exact running time.
 
 ## How it draws
 
