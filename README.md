@@ -86,7 +86,7 @@ in the middle, and the hue leans toward yellow in the highlights.
 - Type a seed, or share the link: it ends in `#s` plus the seed and reopens the same effect.
 - Copy the recipe as JSON.
 - Switch off the light buffer, the dither or the hit-stop to see what each one does.
-- Switch the **look** between **Pixel**, **Cel outline** and **Handheld**.
+- Switch the **look** between **Pixel**, **Cel outline**, **Handheld** and **Ink sketch**.
 - Switch the page's **language** between English, 日本語, 繁體中文 and 简体中文 (top right).
 - Edit the effect by hand: shape, material, palette and timing.
 - Export the effect as a sprite sheet with frame data, or as a GIF.
@@ -127,7 +127,7 @@ in every language.
 
 ## Looks
 
-The same effects can be finished in three looks. The look only changes how a frame is drawn at the end, so every seed,
+The same effects can be finished in four looks. The look only changes how a frame is drawn at the end, so every seed,
 edit and effect works in both.
 
 - **Pixel** (the default): partial transparency breaks into a Bayer dither and glow falls off smoothly.
@@ -136,9 +136,13 @@ edit and effect works in both.
   backdrop is lifted a little so the ink reads against it.
 - **Handheld**: four shades of one green, like an old handheld screen. Each pixel's brightness picks a shade, and the
   4 × 4 Bayer pattern chooses between neighbouring shades, so glow and smoke still fade in dithered steps.
+- **Ink sketch**: drawn on grainy paper. Every solid shape gets an ink outline and cross-hatching that thickens as its
+  colour darkens, so white-hot cores stay bare paper; glow becomes a light hatch that fades to stipple; the ground is
+  ruled in light ink. A faint wash of the palette keeps a hint of each effect's colour. On a transparent sheet the
+  paper drops away and the ink and filled shapes remain.
 
 The look is kept in the link (`#s20482~look:cel`), stays on as you generate new effects, and applies to the
-variations strip and to exports, whose files get the look in their name (`-cel`, `-handheld`) and `"look"` in their JSON.
+variations strip and to exports, whose files get the look in their name (`-cel`, `-handheld`, `-ink`) and `"look"` in their JSON.
 
 ## Exporting
 
