@@ -80,7 +80,8 @@ in the middle, and the hue leans toward yellow in the highlights.
 
 - **Generate** a new effect, or a **Variation** that keeps the effect and nudges its numbers.
 - Keep the **palette** or the **shape** while changing the other.
-- Pick **any**, **one-shots** or **loops**.
+- Pick **any**, **one-shots**, **loops**, **UI**, **transitions** or **critters**. Each family is its own category,
+  so one-shots and loops are the effects alone.
 - Watch six more variations play at once, and click one to open it.
 - Type a seed, or share the link: it ends in `#s` plus the seed and reopens the same effect.
 - Copy the recipe as JSON.
@@ -103,6 +104,9 @@ effect without leaving its seed:
 - **Knobs** for the shape in hand: position, size, particle count, and for one-shots the wind-up, pour time, spark
   speed, gravity, hit-stop, screen shake and facing; for loops the loop length, cycles per loop and spin. Loops stay
   seamless whatever the settings.
+- **Number** and **Hit** for the UI pops: type the number a hit number or pickup shows (up to six digits; it is
+  shown exactly as typed, and clearing the box brings back the seed's own), and switch a hit number between
+  **Normal** and **Critical**. Both are kept in the link, for example `#s20482~crit:1,num:9999,shape:damage`.
 
 Edits are stored after the seed in the link, for example `#s20482~hue:60,shape:beam,size:1.4`, so an edited effect
 can be shared and reopens exactly. A plain `#s` link still opens the seed as it is. The recipe JSON and the exports

@@ -82,6 +82,7 @@ button:disabled { opacity: .45; cursor: default; }
 .edit-grid .wide { grid-column: 1 / -1; }
 .edit-grid select { font: inherit; font-size: 14px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 5px 8px; max-width: 100%; }
 .edit-grid input[type=range] { width: 100%; accent-color: var(--accent); }
+.edit-grid .num-in { font-family: var(--mono); font-size: 14px; color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); padding: 5px 8px; width: 10ch; }
 .edit-grid output { color: var(--fg); text-transform: none; letter-spacing: 0; margin-left: 4px; }
 .knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 20px; }
 .swatches { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border: 1px solid var(--line); }
@@ -188,6 +189,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
           <input type="radio" name="kind" id="kind-any" value="any" checked><label for="kind-any">Any</label>
           <input type="radio" name="kind" id="kind-shot" value="shot"><label for="kind-shot">One-shots</label>
           <input type="radio" name="kind" id="kind-loop" value="loop"><label for="kind-loop">Loops</label>
+          <input type="radio" name="kind" id="kind-ui" value="ui"><label for="kind-ui">UI</label>
+          <input type="radio" name="kind" id="kind-transition" value="transition"><label for="kind-transition">Transitions</label>
+          <input type="radio" name="kind" id="kind-critter" value="critter"><label for="kind-critter">Critters</label>
         </div></div>
       <div class="group"><span class="lbl">When generating</span>
         <div class="checks">
@@ -605,6 +609,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const AIR = ['slash', 'beam', 'implosion', 'firework', 'chain', 'claw', 'dash', 'stars', 'damage', 'wipe', 'iris', 'dissolve'];
   // transitions cover the whole screen, then reveal it
   const TRANSITIONS = ['wipe', 'iris', 'dissolve'];
+  // the families the page lets you pick from; UI pops, transitions and critters each stand apart from the effects
+  const UI_SHAPES = ['pickup', 'levelup', 'damage'], CRITTERS = ['bats', 'slime', 'ghost', 'moths'];
+  const CATEGORIES = [['shot', 'One-shots'], ['loop', 'Loops'], ['ui', 'UI'], ['transition', 'Transitions'], ['critter', 'Critters']];
+  const categoryOf = (shape) => (UI_SHAPES.includes(shape) ? 'ui' : TRANSITIONS.includes(shape) ? 'transition' : CRITTERS.includes(shape) ? 'critter' : ALL_LOOPS.includes(shape) ? 'loop' : 'shot');
   // the second generation passes its own shape and material; the first draws them here, in this order
   function makeShape(R, shape = R.pick(SHAPES), mat = R.pick(MATS)) {
     const ground = shape !== 'nova' && !AIR.includes(shape);
@@ -804,6 +812,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     { id: 'tempo', label: 'Cycles per loop', pick: 'm', values: [1, 2, 3], names: (v) => `${v}`, loop: true },
     { id: 'spin', label: 'Spin', pick: 'spin', values: [1, -1], names: (v) => (v > 0 ? 'Clockwise' : 'Counter-clockwise'), loop: true },
     { id: 'dir', label: 'Facing', pick: 'dir', values: [1, -1], names: (v) => (v > 0 ? 'Right' : 'Left') },
+    // the UI pops show a number; typed in, it is shown exactly as typed
+    { id: 'num', label: 'Number', num: true, min: 0, max: 999999, only: ['damage', 'pickup'], always: true },
+    { id: 'crit', label: 'Hit', pick: 'crit', values: [0, 1], names: (v) => (v ? 'Critical' : 'Normal') },
   ];
   // numbers that depend on the material, refreshed when only the material changes
   const MAT_KEYS = ['puffs', 'smoke', 'grit', 'embers', 'forks', 'shards', 'arcs'];
@@ -825,7 +836,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (mat !== base.mat) { const f = freshNumbers(base.seed, shape, mat); for (const k of MAT_KEYS) if (k in f) p[k] = f[k]; }
     return { shape, mat, p: bare(mat, p) };
   }
-  const knobFits = (k, shape, p) => (k.shot ? !ALL_LOOPS.includes(shape) : k.loop ? ALL_LOOPS.includes(shape) : true) && (!k.only || k.only.includes(shape)) && [...(k.mult || []), k.abs, k.pick].some((key) => key in p);
+  const knobFits = (k, shape, p) => (k.shot ? !ALL_LOOPS.includes(shape) : k.loop ? ALL_LOOPS.includes(shape) : true) && (!k.only || k.only.includes(shape)) && (k.always || [...(k.mult || []), k.abs, k.pick].some((key) => key in p));
   function rgbToHsl([r, g, b]) {
     r /= 255; g /= 255; b /= 255;
     const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
@@ -840,7 +851,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     for (const k of KNOBS) {
       if (!(k.id in ed) || !knobFits(k, shape, p)) continue;
       const v = ed[k.id];
-      if (k.abs) p[k.abs] = v;
+      if (k.num) p.num = Math.round(v);
+      else if (k.abs) p[k.abs] = v;
       else if (k.pick) { if (k.pick in p) p[k.pick] = v; }
       else for (const key of k.mult) if (typeof p[key] === 'number') p[key] = k.int ? Math.round(p[key] * v) : p[key] * v;
     }
@@ -868,7 +880,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         const kn = KNOBS.find((q) => q.id === k);
         if (!kn || !Number.isFinite(+v)) continue;
         if (kn.pick) { if (kn.values.includes(+v)) ed[k] = +v; }
-        else ed[k] = clamp(+v, kn.min, kn.max);
+        else ed[k] = kn.num ? Math.round(clamp(+v, kn.min, kn.max)) : clamp(+v, kn.min, kn.max);
       }
     }
     return ed;
@@ -1354,7 +1366,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const rec = st.rec, p = rec.p, C = st.C;
     if (e < ITEM_RISE) { const q = e / ITEM_RISE; drawItem(st, p.x, FLOOR - 9 - 28 * (1 - (1 - q) * (1 - q)), e * 22, q > 0.85); }
     const q = clamp((e - 0.15) / 1.2), a = 1 - clamp((e - 1.0) / 0.5);
-    if (e > 0.15 && a > 0) drawText('+' + p.gain, p.x - textW('+' + p.gain, 2) / 2, FLOOR - 46 - 16 * (1 - (1 - q) * (1 - q)), 2, C[7], a);
+    if (e > 0.15 && a > 0) drawText('+' + (p.num ?? p.gain), p.x - textW('+' + (p.num ?? p.gain), 2) / 2, FLOOR - 46 - 16 * (1 - (1 - q) * (1 - q)), 2, C[7], a);
   }
   // level up: a column of light over the figure and LEVEL UP! dropping in letter by letter
   function drawLevelUp(st, e) {
@@ -1369,10 +1381,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   function drawDamage(st, e) {
     const rec = st.rec, p = rec.p, C = st.C, [cx, cy] = center(rec), a = 1 - clamp((e - 0.8) / 0.4);
     if (a <= 0) return;
-    const num = '-' + (p.crit ? p.dmg * 2 : p.dmg), sc = e < 0.06 ? 3 : 2, rise = 14 * (1 - Math.pow(1 - clamp(e / 1.2), 2)), x = cx + p.dir * e * 6;
+    const num = '-' + (p.num ?? (p.crit ? p.dmg * 2 : p.dmg)), sc = e < 0.06 ? 3 : 2, rise = 14 * (1 - Math.pow(1 - clamp(e / 1.2), 2)), x = cx + p.dir * e * 6;
     drawText(num, x - textW(num, sc) / 2, cy - rise - (sc * 5) / 2, sc, p.crit ? WHITE : C[7], a);
     if (p.crit) {
-      drawText('CRIT!', x - textW('CRIT!', 1) / 2, cy - rise - 14, 1, C[7], a);
+      drawText('CRIT!', x - textW('CRIT!', 2) / 2, cy - rise - (sc * 5) / 2 - 13, 2, C[6], a);
       if (e < 0.25) for (let k = 0; k < 8; k++) { const g = (k * TAU) / 8 + 0.2, L1 = 9 + e * 50, L2 = L1 + 5; line(x + Math.cos(g) * L1, cy - rise + Math.sin(g) * L1 * 0.7, x + Math.cos(g) * L2, cy - rise + Math.sin(g) * L2 * 0.7, C[6], 1 - e / 0.25); }
     }
   }
@@ -3084,6 +3096,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
 
   // the edit panel
+  const shownNumber = (p) => ('dmg' in p ? (p.crit ? p.dmg * 2 : p.dmg) : p.gain);
   const fmtKnob = (k, v) => (k.fmt ? k.fmt(v) : `×${(+v).toFixed(2)}`);
   const capital = (w) => w[0].toUpperCase() + w.slice(1);
   function showHueSat() {
@@ -3098,7 +3111,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   function buildEditor() {
     const { shape, mat, p } = editBase(base, edits), opt = (v, label) => `<option value="${v}">${label}</option>`;
-    $('ed-shape').innerHTML = `<optgroup label="One-shots">${ALL_SHOTS.map((v) => opt(v, NOUN[v])).join('')}</optgroup><optgroup label="Loops">${ALL_LOOPS.map((v) => opt(v, NOUN[v])).join('')}</optgroup>`;
+    $('ed-shape').innerHTML = CATEGORIES.map(([id, label]) => `<optgroup label="${label}">${[...ALL_SHOTS, ...ALL_LOOPS].filter((v) => categoryOf(v) === id).map((v) => opt(v, NOUN[v])).join('')}</optgroup>`).join('');
     $('ed-shape').value = shape;
     $('ed-mat').innerHTML = EDIT_MATS.map((v) => opt(v, v === 'none' ? 'None · no material' : `${capital(v)} · ${ADJ[v]}`)).join('');
     $('ed-mat').value = mat;
@@ -3108,7 +3121,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     $('ed-swatches').innerHTML = main.rec.pal.map((c, i) => `<input type="color" data-i="${i}" value="${toHex(c)}" aria-label="Palette step ${i + 1} of 8">`).join('');
     refreshSwatches();
     $('ed-knobs').innerHTML = KNOBS.filter((k) => knobFits(k, shape, p)).map((k) => {
-      const cur = k.id in edits ? edits[k.id] : k.abs ? p[k.abs] : k.pick ? p[k.pick] : 1;
+      const cur = k.id in edits ? edits[k.id] : k.num ? shownNumber(p) : k.abs ? p[k.abs] : k.pick ? Number(p[k.pick]) : 1;
+      if (k.num) return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label}</label><input type="text" inputmode="numeric" maxlength="6" class="num-in" id="kn-${k.id}" data-k="${k.id}" value="${cur}" aria-label="Number to show"></div>`;
       if (k.pick) return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label}</label><select id="kn-${k.id}" data-k="${k.id}">${k.values.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${k.names(v)}</option>`).join('')}</select></div>`;
       return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label} <output>${fmtKnob(k, cur)}</output></label><input type="range" id="kn-${k.id}" data-k="${k.id}" min="${k.min}" max="${k.max}" step="${k.step || 0.05}" value="${cur}"></div>`;
     }).join('');
@@ -3121,7 +3135,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   // a still frame worth showing when motion is reduced
   function restTime(rec) { return rec.loop ? rec.p.period * 0.3 : rec.p.wind + rec.p.stop + 0.3; }
-  const kindOk = (rec) => S.kind === 'any' || (S.kind === 'loop') === rec.loop;
+  const kindOk = (rec) => S.kind === 'any' || categoryOf(rec.shape) === S.kind;
   // a random recipe of the chosen kind
   function pickRecipe(keep) {
     let rec;
@@ -3259,7 +3273,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   $('ed-knobs').addEventListener('input', (e) => {
     const k = KNOBS.find((q) => q.id === e.target.dataset.k);
     if (!k) return;
-    const v = +e.target.value, own = k.mult ? 1 : editBase(base, edits).p[k.abs || k.pick];
+    if (k.num) {
+      // digits only; an empty box goes back to the seed's own number
+      const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+      if (digits !== e.target.value) e.target.value = digits;
+      edit(k.id, digits === '' ? undefined : +digits);
+      return;
+    }
+    const v = +e.target.value, own = k.mult ? 1 : Number(editBase(base, edits).p[k.abs || k.pick]);
     const out = e.target.parentElement.querySelector('output');
     if (out) out.textContent = fmtKnob(k, v);
     edit(k.id, v === own ? undefined : v);
