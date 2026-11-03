@@ -1,19 +1,19 @@
 # pixelfx-generator
 
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
-4.3 billion of them. Its shape, material, timing and palette all come from that one number.
+8.6 billion of them. Its shape, material, timing and palette all come from that one number.
 
 Open `index.html` in a browser. There is no build step and nothing to install. The page loads its fonts from Google
 Fonts and runs everything else inline.
 
 ## What it makes
 
-**128 effect types**: 16 shapes × 8 materials, each with its own range of variations.
+**216 effect types**: 27 shapes × 8 materials, each with its own range of variations.
 
 | | Shapes |
 |---|---|
-| One-shots | strike, slam, nova, eruption, shatter, slash, beam, pillar |
-| Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile |
+| One-shots | strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw |
+| Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath |
 
 Materials are **flame**, **frost**, **storm**, **dust**, **void**, **poison**, **holy** and **water**. They change
 what the effect throws off: fire that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds,
@@ -27,15 +27,29 @@ The newer shapes:
   back, and gives out as a dotted line.
 - **Pillar**: a mark lights on the floor under a dotted guide line, then a column slams down from the sky and draws
   back up.
-- **Brazier**, **orb**, **ward** and **missile** loops: a flame bowl on legs, a turning crystal in rings, a glass
-  dome that takes hits, and a projectile in flight.
+- **Implosion**: streaks and rings rush in, a dark sphere collapses onto a white point, then it pops.
+- **Spikes**: a line races along the floor, blades burst up behind it in a wave, flash together and shatter.
+- **Firework**: a shell climbs on a fizzing trail and bursts into drooping stars that crackle as they burn out.
+- **Wave**: the floor swells, then a crest rolls across it with foam on top, throwing spray and grit.
+- **Chain**: a charge builds in a hand, then an arc leaps through a line of targets, each flashing as it is hit.
+- **Claw**: three white-hot marks rake down one after another, cool, close up and leave a dotted scar.
+- Loops: **brazier** (a flame bowl on legs), **orb** (a turning crystal in rings), **ward** (a glass dome that takes
+  hits), **missile** (a projectile in flight), **fountain** (a jet breaking into arcs over a basin), **cloud** (a
+  boiling cloud raining the material), **beacon** (a pad with a column and rising rings of light), **swarm** (motes
+  on figure-of-eight paths) and **breath** (a stream pouring from a spout).
 
-### Two generations of seeds
+### Generations of seeds
 
-Seeds are shareable, so adding shapes must not change old ones. Seeds 1 to 2,147,483,647 are the first generation:
-they only know the first nine shapes and five materials and play exactly as they always did. Seeds 2,147,483,648 to
-4,294,967,295 are the second generation and draw from all sixteen shapes and eight materials. Generate and the
-variations strip pick second-generation seeds; first-generation seeds still open from a link or the seed box.
+Seeds are shareable, so adding shapes must not change old ones. Each batch of new shapes gets its own seed range:
+
+| Generation | Seeds | Draws from |
+|---|---|---|
+| First | 1 to 2,147,483,647 | 9 shapes, 5 materials |
+| Second | 2,147,483,648 to 4,294,967,295 | 16 shapes, 8 materials |
+| Third | 4,294,967,296 to 8,589,934,591 | 27 shapes, 8 materials |
+
+Every seed plays exactly as it did when its generation was added. Generate and the variations strip pick seeds from
+the newest generation; older seeds still open from a link or the seed box.
 
 Each seed also builds its own eight-step palette. Lightness climbs from near black to near white, saturation peaks
 in the middle, and the hue leans toward yellow in the highlights.
@@ -56,9 +70,11 @@ in the middle, and the hue leans toward yellow in the highlights.
 
 Open **Edit this effect** under the controls to change the current effect without leaving its seed:
 
-- **Shape** and **material**: any of the 16 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
+- **Shape** and **material**: any of the 27 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
   from the seed; a new material keeps the shape's numbers and only refreshes the ones the material decides (puffs,
-  smoke, embers, lightning and so on).
+  smoke, embers, lightning and so on). Pick **None** for no material at all: the shape keeps its sparks, rings,
+  cracks, shards and light, loops keep plain motes of light where the material would be, and the name drops its
+  adjective (for example "Rose Nova"). Seeds never pick None; only the editor does.
 - **Palette**: turn the hue, scale the saturation, or pick any of the eight colours directly.
 - **Knobs** for the shape in hand: position, size, particle count, and for one-shots the wind-up, pour time, spark
   speed, gravity, hit-stop, screen shake and facing; for loops the loop length, cycles per loop and spin. Loops stay

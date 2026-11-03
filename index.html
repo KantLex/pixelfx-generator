@@ -273,8 +273,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <div class="note">
         <h3>One seed, one recipe</h3>
         <div>
-          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are eight one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar) and eight loops (aura, portal, vortex, sigil, brazier, orb, ward, missile), so 16 shapes × 8 materials makes <strong>128 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
-          <p>Seeds come in two generations. Seeds up to 2,147,483,647 are the first: they only know the first nine shapes and five materials, and they play exactly as they always have, so old links still work. Seeds above that, up to 4,294,967,295, are the second generation and draw from everything. Generate picks from the second.</p>
+          <p>A seed starts a seeded random sequence. The draws pick a <strong>shape</strong> and a <strong>material</strong> (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are fourteen one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw) and thirteen loops (aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath), so 27 shapes × 8 materials makes <strong>216 types</strong>, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.</p>
+          <p>Seeds come in generations, so adding shapes never changes an old link. Seeds up to 2,147,483,647 are the first generation: nine shapes and five materials. Up to 4,294,967,295 is the second: sixteen shapes and eight materials. Up to 8,589,934,591 is the third, which draws from all 27 shapes. Each plays exactly as it always has. Generate picks from the newest.</p>
         </div>
       </div>
       <div class="note">
@@ -290,6 +290,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
             <li><strong>Orb</strong>: a floating crystal that turns one facet per loop inside tilted rings, shedding its material.</li>
             <li><strong>Ward</strong>: a glass dome of plates over a figure, a band of light climbing it, and shots from one side that glance off in ripples and sparks.</li>
             <li><strong>Missile</strong>: a ball or a faceted lance in flight, held in place while its trail, sparks and speed lines stream past.</li>
+            <li><strong>Fountain</strong>: a stone basin and a rippling jet that breaks into arcs of the material, each landing with a ring.</li>
+            <li><strong>Cloud</strong>: blobs that swell and shrink, lit from above, raining the material; a storm cloud flashes and strikes the floor.</li>
+            <li><strong>Beacon</strong>: a steel pad with ripples, a soft column of light, and rings of light lifting off it.</li>
+            <li><strong>Swarm</strong>: bright motes on closed figure-of-eight paths, each trailing the material.</li>
+            <li><strong>Breath</strong>: a stream of the material pouring from a spout in a widening cone, white-hot at the lips.</li>
           </ul>
         </div>
       </div>
@@ -317,8 +322,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <table>
         <thead><tr><th scope="col"></th><th scope="col">PixelFX</th><th scope="col">This generator</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 4.3 billion seeds gives a different effect</td></tr>
-          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>128 types: 8 one-shot shapes and 8 loops, each in 8 materials, with the numbers varied inside each. No UI, weather, transitions or critters</td></tr>
+          <tr><th scope="row">Where effects come from</th><td>244 hand-written files, each tuned over several render-and-fix rounds</td><td>One engine and a recipe drawn from a seed. Any of about 8.6 billion seeds gives a different effect</td></tr>
+          <tr><th scope="row">Range of kinds</th><td>21 categories, including loops, UI, transitions, weather and critters</td><td>216 types: 14 one-shot shapes and 13 loops, each in 8 materials, with the numbers varied inside each. No UI, transitions or critters</td></tr>
           <tr><th scope="row">Palettes</th><td>A curated ramp per effect, which callers can swap</td><td>A new hue-shifted ramp per seed, which can be locked while the shape changes</td></tr>
           <tr><th scope="row">Characters</th><td>A 3D-skeleton fighter with wind-ups, hit reactions and a target dummy</td><td>None</td></tr>
           <tr><th scope="row">Quality</th><td>Each effect held to a written quality bar and benchmarked against references</td><td>Uneven. Guard rails keep results readable, but nobody has reviewed a given seed</td></tr>
@@ -337,6 +342,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       <li>Six live variations at once, and an option to play a new effect after each one.</li>
       <li>Export as a sprite sheet with frame data, or as a GIF.</li>
       <li>A second generation of seeds with three more one-shots (slash, beam, pillar), four more loops (brazier, orb, ward, missile) and three more materials: poison bubbles that swell and pop, holy glints, and water drops that splash on the floor.</li>
+      <li>A third generation with six more one-shots (implosion, spikes, firework, wave, chain, claw) and five more loops (fountain, cloud, beacon, swarm, breath).</li>
+      <li>An editor for shape, material (or none), palette and timing, kept in the link.</li>
     </ul>
   </section>
 
@@ -563,7 +570,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const ADJ = { flame: 'Burning', frost: 'Frozen', storm: 'Charged', dust: 'Earthen', void: 'Hollow' };
 
   // shapes whose contact happens in the air, like a nova: round rings, sparks all round, nothing on the floor
-  const AIR = ['slash', 'beam'];
+  const AIR = ['slash', 'beam', 'implosion', 'firework', 'chain', 'claw'];
   // the second generation passes its own shape and material; the first draws them here, in this order
   function makeShape(R, shape = R.pick(SHAPES), mat = R.pick(MATS)) {
     const ground = shape !== 'nova' && !AIR.includes(shape);
@@ -601,9 +608,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const SHAPES2 = ['slash', 'beam', 'pillar'], LOOPS2 = ['torch', 'orb', 'shield', 'missile'], MATS2 = ['poison', 'holy', 'water'];
   Object.assign(NOUN, { slash: 'Slash', beam: 'Beam', pillar: 'Pillar', torch: 'Brazier', orb: 'Orb', shield: 'Ward', missile: 'Missile' });
   Object.assign(ADJ, { poison: 'Toxic', holy: 'Radiant', water: 'Tidal' });
-  const ALL_SHOTS = [...SHAPES, ...SHAPES2], ALL_LOOPS = [...LOOPS, ...LOOPS2], ALL_MATS = [...MATS, ...MATS2];
-  // seeds up to GEN1 are the first generation; above it, up to MAX_SEED, the second
-  const GEN1 = 2147483647, MAX_SEED = 4294967295;
+  // the second generation picks from exactly this list, in this order, so its seeds keep their effects too
+  const GEN2_SHAPES = [...SHAPES, ...SHAPES2, ...LOOPS, ...LOOPS2], GEN2_MATS = [...MATS, ...MATS2];
+  // the third generation adds more shapes
+  const SHAPES3 = ['implosion', 'spikes', 'firework', 'wave', 'chain', 'claw'], LOOPS3 = ['fountain', 'cloud', 'beacon', 'swarm', 'breath'];
+  Object.assign(NOUN, { implosion: 'Implosion', spikes: 'Spikes', firework: 'Firework', wave: 'Wave', chain: 'Chain', claw: 'Claw', fountain: 'Fountain', cloud: 'Cloud', beacon: 'Beacon', swarm: 'Swarm', breath: 'Breath' });
+  const ALL_SHOTS = [...SHAPES, ...SHAPES2, ...SHAPES3], ALL_LOOPS = [...LOOPS, ...LOOPS2, ...LOOPS3], ALL_MATS = [...MATS, ...MATS2];
+  // seeds up to GEN1 are the first generation, up to GEN2 the second, and up to MAX_SEED the third
+  const GEN1 = 2147483647, GEN2 = 4294967295, MAX_SEED = 8589934591;
   // numbers only the new shapes use, drawn after the shared ones
   function extraShape(R, shape, p) {
     if (shape === 'slash') Object.assign(p, {
@@ -616,6 +628,21 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       alt: Math.round(R.range(10, 28)), beam: R.range(0.5, 1.1), beamW: R.range(1.8, 4), beamLen: R.range(56, 84), wind: R.range(0.45, 0.8),
     });
     if (shape === 'pillar') Object.assign(p, { colW: R.range(3, 7), hold: R.range(0.25, 0.6), rings: Math.max(1, p.rings) });
+    if (shape === 'implosion') Object.assign(p, { alt: Math.round(R.range(18, 30)), wind: R.range(0.6, 1.0), implR: R.range(18, 30), rings: Math.max(1, p.rings) });
+    if (shape === 'spikes') Object.assign(p, {
+      wind: R.range(0.4, 0.7), spikeN: R.int(5, 9), spikeH: R.range(13, 26), spikeLen: R.range(40, 68), spikeHold: R.range(0.4, 0.65), spikeSeed: R.range(0, 100),
+      // the blades are the show: no shock ring, half the sparks
+      rings: 0, sparks: Math.round(p.sparks * 0.5),
+    });
+    if (shape === 'firework') Object.assign(p, {
+      alt: Math.round(R.range(40, 58)), wind: R.range(0.55, 0.9), gravity: R.range(50, 120), sparks: R.int(40, 70), sparkSpeed: R.range(55, 100), rings: 1,
+    });
+    if (shape === 'wave') Object.assign(p, { wind: R.range(0.35, 0.6), waveT: R.range(0.8, 1.4), waveH: R.range(13, 24), waveLen: R.range(60, 100), rings: 0, sparks: Math.round(p.sparks * 0.5) });
+    if (shape === 'chain') Object.assign(p, { alt: Math.round(R.range(14, 30)), wind: R.range(0.4, 0.7), nodes: R.int(3, 5), gap: R.range(18, 28), chainSeed: R.range(0, 100), rings: 0 });
+    if (shape === 'claw') Object.assign(p, {
+      alt: Math.round(R.range(18, 30)), wind: R.range(0.25, 0.4), clawLen: R.range(24, 38), clawGap: R.range(5, 8), clawAng: R.range(0.9, 1.3), clawW: R.range(2, 3.5),
+      rings: 0, rays: 0,
+    });
     return p;
   }
   function extraLoop(L, shape, p) {
@@ -623,17 +650,24 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (shape === 'orb') Object.assign(p, { oy: L.range(22, 34), os: L.range(6, 9), facets: L.int(4, 7), rings2: L.int(1, 2), ringTilt: L.range(-0.6, 0.6) });
     if (shape === 'shield') Object.assign(p, { dr: L.range(22, 32), dh: L.range(20, 30), hits: L.int(1, 3), plates: L.int(5, 8), dir: L.pick([1, -1]) });
     if (shape === 'missile') Object.assign(p, { alt: L.range(18, 40), head: L.range(2.4, 4.2), trail: L.range(34, 64), lance: L() < 0.4, dir: L.pick([1, -1]) });
+    if (shape === 'fountain') Object.assign(p, { jetH: L.range(26, 44), basin: L.range(10, 16), arcSpread: L.range(8, 18) });
+    if (shape === 'cloud') Object.assign(p, { cloudW: L.range(26, 40), cloudY: L.range(16, 26), fall: L.int(14, 30), blobs: L.int(6, 10) });
+    if (shape === 'beacon') Object.assign(p, { padR: L.range(10, 16), colH: L.range(50, 76), lifts: L.int(3, 6) });
+    if (shape === 'swarm') Object.assign(p, { swarm: L.int(5, 12), roam: L.range(18, 34), sy: L.range(10, 22), hover: L.range(20, 36) });
+    if (shape === 'breath') Object.assign(p, { mouthY: L.range(18, 40), reach: L.range(60, 100), cone: L.range(0.25, 0.6), dir: L.pick([1, -1]) });
     return p;
   }
-  function makeRecipe2(seed) {
-    const R = rng(seed), shape = R.pick([...ALL_SHOTS, ...ALL_LOOPS]), mat = R.pick(ALL_MATS);
+  // later generations: one stream picks the shape and material from the generation's own lists, then all the numbers
+  function makeRecipeFrom(R, shapes, mats) {
+    const shape = R.pick(shapes), mat = R.pick(mats);
     const s = ALL_LOOPS.includes(shape) ? makeLoop(R, shape, mat) : makeShape(R, shape, mat);
     if (ALL_LOOPS.includes(shape)) extraLoop(R, shape, s.p); else extraShape(R, shape, s.p);
     return { s, pal: genPalette(R, mat) };
   }
   function makeRecipe(seed, keep) {
     let s, pal;
-    if (seed > GEN1) ({ s, pal } = makeRecipe2(seed));
+    if (seed > GEN2) ({ s, pal } = makeRecipeFrom(rng(((seed - GEN2 - 1) ^ 0x6a09e667) >>> 0), [...ALL_SHOTS, ...ALL_LOOPS], ALL_MATS));
+    else if (seed > GEN1) ({ s, pal } = makeRecipeFrom(rng(seed), GEN2_SHAPES, GEN2_MATS));
     else {
       const R = rng(seed);
       s = makeShape(R);
@@ -649,13 +683,13 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     return rec;
   }
   function finish(rec) {
-    rec.name = `${ADJ[rec.mat]} ${hueName(rec.pal[4])} ${NOUN[rec.shape]}`;
+    rec.name = [ADJ[rec.mat], hueName(rec.pal[4]), NOUN[rec.shape]].filter(Boolean).join(' ');
     rec.loop = ALL_LOOPS.includes(rec.shape);
     rec.total = rec.loop ? rec.p.period * 3 : rec.p.wind + rec.p.stop + sustain(rec) + 3.5;
     return rec;
   }
   // how long a one-shot keeps pouring after contact: the eruption's column, the beam
-  const sustain = (rec) => (rec.shape === 'geyser' ? rec.p.erupt : rec.shape === 'beam' ? rec.p.beam : 0);
+  const sustain = (rec) => (rec.shape === 'geyser' ? rec.p.erupt : rec.shape === 'beam' ? rec.p.beam : rec.shape === 'wave' ? rec.p.waveT : 0);
   // same shape and palette, numbers nudged, different particles
   function vary(rec, seed) {
     const R = rng(seed), p = { ...rec.p };
@@ -679,10 +713,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // so a seed plus its edits always gives the same effect and both fit in a link.
   const KNOBS = [
     { id: 'x', label: 'Position', abs: 'x', min: 20, max: 140, step: 1, fmt: (v) => `${v} px` },
-    { id: 'size', label: 'Size', min: 0.5, max: 1.6, mult: ['ringR', 'hero', 'rayLen', 'crystal', 'slashR', 'slashW', 'beamW', 'colW', 'puffSize', 'rx', 'ry', 'orbitR', 'vr', 'vh', 'rr', 'os', 'dr', 'dh', 'head', 'bowl', 'flameH', 'trail'] },
-    { id: 'amount', label: 'Particles', min: 0, max: 2, int: true, mult: ['sparks', 'puffs', 'grit', 'embers', 'shards', 'tongues', 'motes', 'wisps', 'orbit', 'bands'] },
+    { id: 'size', label: 'Size', min: 0.5, max: 1.6, mult: ['ringR', 'hero', 'rayLen', 'crystal', 'slashR', 'slashW', 'beamW', 'colW', 'puffSize', 'rx', 'ry', 'orbitR', 'vr', 'vh', 'rr', 'os', 'dr', 'dh', 'head', 'bowl', 'flameH', 'trail', 'implR', 'spikeH', 'spikeLen', 'clawLen', 'clawW', 'waveH', 'waveLen', 'gap', 'jetH', 'basin', 'arcSpread', 'cloudW', 'padR', 'colH', 'roam', 'sy', 'reach'] },
+    { id: 'amount', label: 'Particles', min: 0, max: 2, int: true, mult: ['sparks', 'puffs', 'grit', 'embers', 'shards', 'tongues', 'motes', 'wisps', 'orbit', 'bands', 'spikeN', 'nodes', 'fall', 'blobs', 'lifts', 'swarm'] },
     { id: 'wind', label: 'Wind-up', min: 0.5, max: 2, mult: ['wind'], shot: true },
-    { id: 'pour', label: 'Pour time', min: 0.5, max: 2, mult: ['erupt', 'beam', 'hold'], shot: true, only: ['geyser', 'beam', 'pillar'] },
+    { id: 'pour', label: 'Pour time', min: 0.5, max: 2, mult: ['erupt', 'beam', 'hold', 'waveT', 'spikeHold'], shot: true, only: ['geyser', 'beam', 'pillar', 'wave', 'spikes'] },
     { id: 'burst', label: 'Spark speed', min: 0.4, max: 1.8, mult: ['sparkSpeed'], shot: true },
     { id: 'gravity', label: 'Gravity', min: 0.2, max: 2, mult: ['gravity'], shot: true },
     { id: 'stop', label: 'Hit-stop', min: 0, max: 3, mult: ['stop'], shot: true },
@@ -694,6 +728,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   ];
   // numbers that depend on the material, refreshed when only the material changes
   const MAT_KEYS = ['puffs', 'smoke', 'grit', 'embers', 'forks', 'shards', 'arcs'];
+  // only the editor offers no material at all; seeds never pick it
+  const EDIT_MATS = [...ALL_MATS, 'none'];
+  // with no material the shape keeps its sparks, rings, cracks and light but throws off nothing of its own
+  const bare = (mat, p) => (mat === 'none' ? Object.assign(p, ...['puffs', 'embers', 'forks', 'arcs'].filter((k) => k in p).map((k) => ({ [k]: 0 })), 'smoke' in p ? { smoke: false } : {}) : p);
   // a full set of numbers for a shape and material, from the seed alone, so the same edits always land the same way
   function freshNumbers(seed, shape, mat) {
     const R = rng((Math.imul(seed, 2654435761) ^ 0x2545f491) >>> 0);
@@ -703,10 +741,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // the shape, material and numbers before any knob is turned
   function editBase(base, ed) {
     const shape = ed.shape || base.shape, mat = ed.mat || base.mat;
-    if (shape !== base.shape) return { shape, mat, p: freshNumbers(base.seed, shape, mat) };
+    if (shape !== base.shape) return { shape, mat, p: bare(mat, freshNumbers(base.seed, shape, mat)) };
     const p = { ...base.p };
     if (mat !== base.mat) { const f = freshNumbers(base.seed, shape, mat); for (const k of MAT_KEYS) if (k in f) p[k] = f[k]; }
-    return { shape, mat, p };
+    return { shape, mat, p: bare(mat, p) };
   }
   const knobFits = (k, shape, p) => (k.shot ? !ALL_LOOPS.includes(shape) : k.loop ? ALL_LOOPS.includes(shape) : true) && (!k.only || k.only.includes(shape)) && [...(k.mult || []), k.abs, k.pick].some((key) => key in p);
   function rgbToHsl([r, g, b]) {
@@ -743,7 +781,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     for (const part of (text || '').split(',')) {
       const [k, v] = part.split(':');
       if (k === 'shape' && [...ALL_SHOTS, ...ALL_LOOPS].includes(v)) ed.shape = v;
-      else if (k === 'mat' && ALL_MATS.includes(v)) ed.mat = v;
+      else if (k === 'mat' && EDIT_MATS.includes(v)) ed.mat = v;
       else if (k === 'hue' && Number.isFinite(+v)) ed.hue = clamp(+v, -180, 180);
       else if (k === 'sat' && Number.isFinite(+v)) ed.sat = clamp(+v, 0, 1.6);
       else if (/^c[0-7]$/.test(k) && /^[0-9a-f]{6}$/.test(v)) ed[k] = v;
@@ -784,10 +822,49 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   const SWEEP = 0.09;
   // where the beam leaves from: the caster's side of the hit
   const muzzleX = (rec) => Math.round(clamp(rec.p.x - rec.p.dir * rec.p.beamLen, 6, 154));
+  // a repeatable 0..1 number from two inputs, for per-spike and per-node variety without spending draws
+  const hash01 = (i, s) => { const h = Math.sin((i + 1) * 12.9898 + s * 78.233) * 43758.5453; return h - Math.floor(h); };
+  // spikes: a row of blades that burst up along the floor in a wave, in the direction the row was drawn
+  function spikeList(rec) {
+    const p = rec.p, n = Math.max(1, p.spikeN), x0 = p.x - (p.dir * p.spikeLen) / 2, out = [];
+    for (let i = 0; i < n; i++) {
+      const f = n > 1 ? i / (n - 1) : 0.5, j = hash01(i, p.spikeSeed);
+      out.push({ x: x0 + p.dir * f * p.spikeLen, h: p.spikeH * (0.55 + 0.45 * j) * (0.7 + 0.3 * Math.sin(Math.PI * f)), lean: (j - 0.5) * 0.5, delay: f * 0.18 });
+    }
+    return out;
+  }
+  // claw: three parallel marks raking down; mark j, u from 0 (top) to 1 (bottom)
+  function clawPt(rec, j, u, side = 0) {
+    const p = rec.p, [cx, cy] = center(rec), dx = Math.cos(p.clawAng) * p.dir, dy = Math.sin(p.clawAng), off = (j - 1) * p.clawGap + side;
+    return [cx - dy * off + dx * (u - 0.5) * p.clawLen, cy + dx * off + dy * (u - 0.5) * p.clawLen];
+  }
+  const CLAW_START = 0.13, CLAW_RAKE = 0.05;
+  // chain: the caster's hand, then the targets the arc leaps through
+  function chainNodes(rec) {
+    const p = rec.p, [cx, cy] = center(rec), out = [[clamp(cx - p.dir * 34, 6, 154), cy + 4]];
+    for (let i = 0; i < Math.max(1, p.nodes); i++) out.push([clamp(cx + p.dir * i * p.gap, 6, 154), clamp(cy + (hash01(i, p.chainSeed) - 0.5) * 24, 10, FLOOR - 4)]);
+    return out;
+  }
+  const CHAIN_HOP = 0.07;
+  // three jagged takes on the arc from a to b, flickered between while it lives
+  function makeArc(R, [x0, y0], [x1, y1]) {
+    const L = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / L, ny = (x1 - x0) / L, n = Math.max(4, Math.round(L / 5)), out = [];
+    for (let v = 0; v < 3; v++) {
+      const pts = [[x0, y0]];
+      for (let i = 1; i < n; i++) { const o = R.range(-3, 3); pts.push([x0 + ((x1 - x0) * i) / n + nx * o, y0 + ((y1 - y0) * i) / n + ny * o]); }
+      pts.push([x1, y1]);
+      out.push(pts);
+    }
+    return out;
+  }
+  // wave: where the crest is, e seconds after it launches
+  const waveEnd = (rec) => clamp(rec.p.x + rec.p.dir * rec.p.waveLen, 6, 154);
+  const waveX = (rec, e) => rec.p.x + (waveEnd(rec) - rec.p.x) * (1 - Math.pow(1 - clamp(e / rec.p.waveT), 2));
   function createFx(rec) {
     const C = rec.pal, R = rng(rec.sim * 7 + 1);
     const st = { rec, t: 0, hit: false, R, C, FR: [WHITE, C[7], C[6], C[5], C[4], C[3], C[2], C[1]], ps: [], lights: [], cracks: [], forks: [] };
     if (rec.loop) st.rnd = Array.from({ length: 256 }, () => R());
+    if (rec.shape === 'chain') { const nd = chainNodes(rec); st.arcs = nd.slice(1).map((b, i) => makeArc(R, nd[i], b)); st.chainHit = 0; }
     return st;
   }
   function spawn(st, k, x, y, vx, vy, life, extra) {
@@ -821,7 +898,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   function impact(st) {
     const R = st.R, rec = st.rec, p = rec.p, C = st.C, [cx, cy] = center(rec), [fx, fy] = focus(rec), nova = airy(rec);
     // a slash keeps its light low so the crescent reads
-    const lk = rec.shape === 'slash' ? 0.4 : 1;
+    const lk = rec.shape === 'slash' || rec.shape === 'claw' ? 0.4 : 1;
     st.lights.push({ x: fx, y: fy - 2, r: 46 + p.ringR * 0.5, c: C[6], k: 1.1 * lk, life: 1.4, max: 1.4 });
     st.lights.push({ x: fx, y: fy, r: 20, c: WHITE, k: 1.3 * lk, life: 0.3, max: 0.3 });
     for (let i = 0; i < p.sparks; i++) {
@@ -831,12 +908,19 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         spawn(st, 'spark', x, y, tx * sp, ty * sp - 30, R.range(0.3, 0.8));
         continue;
       }
+      // a claw's hot flecks fly off sideways and drip
+      if (rec.shape === 'claw') {
+        const [x, y] = clawPt(rec, R.int(0, 2), R.range(0.1, 0.9)), sp = p.sparkSpeed * R.range(0.2, 0.6);
+        spawn(st, 'spark', x, y, R.range(-1, 1) * sp, R.range(-0.6, 0.4) * sp, R.range(0.3, 0.8));
+        continue;
+      }
       const a = rec.shape === 'beam' ? (p.dir > 0 ? Math.PI : 0) + R.range(-p.spread, p.spread) * 0.8 : nova ? R.range(0, TAU) : -Math.PI / 2 + R.range(-p.spread, p.spread), sp = p.sparkSpeed * R.range(0.45, 1);
       spawn(st, 'spark', fx, fy + (nova ? 0 : 3), Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.35, 0.95));
     }
     const puffs = rec.shape === 'geyser' ? Math.ceil(p.puffs * 0.4) : p.puffs;
     for (let i = 0; i < puffs; i++) {
       if (rec.shape === 'slash') { const u = R.range(0.15, 1), [x, y] = slashPt(rec, u), [tx, ty] = slashTan(rec, u); spawnPuff(st, x, y, tx * 30, ty * 30 - 12, 0.7); }
+      else if (rec.shape === 'claw') { const [x, y] = clawPt(rec, R.int(0, 2), R.range(0.1, 0.9)); spawnPuff(st, x, y, R.range(-15, 15), R.range(-20, 5), 0.6); }
       else if (nova) { const a = R.range(0, TAU), sp = R.range(15, 55); spawnPuff(st, cx + Math.cos(a) * 3, cy + Math.sin(a) * 3, Math.cos(a) * sp, Math.sin(a) * sp - 10); }
       else spawnPuff(st, cx + R.range(-7, 7), cy - R.range(1, 5), R.range(-35, 35), R.range(-75, -25));
     }
@@ -886,6 +970,18 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         if (R() < 0.15 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(12, 26); spawn(st, 'streak', mx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.4, -Math.sin(a) * d * 1.4, 0.6, { tx: mx, ty: cy }); }
       } else if (rec.shape === 'pillar') {
         if (R() < 0.08 + 0.3 * u) { const a = R.range(0, TAU), r = 4 + (1 - u) * 14; spawn(st, 'mote', cx + Math.cos(a) * r, FLOOR + 1 + Math.sin(a) * r * 0.28, 0, -R.range(15, 40), R.range(0.2, 0.45)); }
+      } else if (rec.shape === 'implosion') {
+        // everything rushes in, faster and thicker as it goes
+        if (R() < 0.35 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(26, 50); spawn(st, 'streak', cx + Math.cos(a) * d, cy + Math.sin(a) * d, -Math.cos(a) * d * 1.8, -Math.sin(a) * d * 1.8, 0.6, { tx: cx, ty: cy }); }
+      } else if (rec.shape === 'firework') {
+        // the shell climbs on a fizzing trail
+        const y = FLOOR - p.alt * (1 - (1 - u) * (1 - u));
+        if (R() < 0.7) spawn(st, 'mote', cx + R.range(-0.6, 0.6), y + 1, R.range(-12, 12), R.range(5, 30), R.range(0.15, 0.4));
+      } else if (rec.shape === 'wave') {
+        if (R() < 0.12 * u) spawnPuff(st, cx + R.range(-4, 4), FLOOR - 1, R.range(-10, 10), -R.range(5, 25), 0.6);
+      } else if (rec.shape === 'chain') {
+        const [hx, hy] = chainNodes(rec)[0];
+        if (R() < 0.15 + 0.6 * u) { const a = R.range(0, TAU), d = R.range(10, 22); spawn(st, 'streak', hx + Math.cos(a) * d, hy + Math.sin(a) * d, -Math.cos(a) * d * 1.4, -Math.sin(a) * d * 1.4, 0.6, { tx: hx, ty: hy }); }
       } else if (rec.shape === 'shatter') {
         if (u > 0.55 && R() < 0.12) { const c = crystalPts(rec, u); spawn(st, 'mote', cx + R.range(-c.w, c.w) * 0.6, FLOOR - R.range(2, c.h), R.range(-15, 15), R.range(-30, -5), R.range(0.2, 0.4)); }
       }
@@ -895,6 +991,37 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       if (R() < 0.55) { const a = -Math.PI / 2 + R.range(-p.cone, p.cone), sp = R.range(80, 150) * power; spawnPuff(st, cx + R.range(-2, 2), FLOOR - 1, Math.cos(a) * sp, Math.sin(a) * sp); }
       if (R() < 0.2) { const a = -Math.PI / 2 + R.range(-p.cone * 1.5, p.cone * 1.5), sp = R.range(140, 260) * power; spawn(st, 'spark', cx, FLOOR - 2, Math.cos(a) * sp, Math.sin(a) * sp, R.range(0.4, 0.9)); }
       if (R() < 0.04) st.lights.push({ x: cx, y: FLOOR - 14, r: 34, c: st.C[6], k: 0.6, life: 0.25, max: 0.25 });
+    }
+    if (rec.shape === 'spikes' && st.hit && !st.burst && t - IMP >= p.spikeHold) {
+      // every blade flashes and bursts into shards at once
+      st.burst = true;
+      for (const sp of spikeList(rec)) {
+        for (let i = 0; i < 3; i++) { const y = FLOOR - R.range(1, sp.h), a = -Math.PI / 2 + R.range(-1.2, 1.2), v = R.range(50, 130); spawn(st, 'shard', sp.x, y, Math.cos(a) * v, Math.sin(a) * v, R.range(0.8, 1.5), { ang: R.range(0, TAU), spin: R.range(-18, 18), len: R.range(2, 4) }); }
+        spawnPuff(st, sp.x, FLOOR - 2, R.range(-15, 15), -R.range(10, 30), 0.6);
+      }
+      st.lights.push({ x: p.x, y: FLOOR - p.spikeH * 0.5, r: p.spikeLen * 0.7, c: st.C[6], k: 0.8, life: 0.3, max: 0.3 });
+    }
+    if (rec.shape === 'wave' && st.hit && t - IMP < p.waveT) {
+      const x = waveX(rec, t - IMP), h = p.waveH * Math.sin(Math.PI * Math.min(1, ((t - IMP) / p.waveT) * 1.2));
+      if (R() < 0.5) spawnPuff(st, x, FLOOR - h, p.dir * R.range(10, 40), -R.range(10, 40), 0.7);
+      if (R() < 0.25) spawn(st, 'spark', x, FLOOR - h, p.dir * R.range(30, 90), -R.range(40, 110), R.range(0.3, 0.7));
+      if (R() < 0.15) spawn(st, 'grit', x, FLOOR - 1, p.dir * R.range(10, 50), -R.range(30, 80), R.range(0.8, 1.4), { rock: mixC(st.C[2], [80, 72, 92], 0.6) });
+    }
+    if (rec.shape === 'chain' && st.hit) {
+      // the arc reaches each further target one hop later; each one flashes and bursts
+      const nd = chainNodes(rec);
+      while (st.chainHit < nd.length - 2 && t - IMP >= (st.chainHit + 1) * CHAIN_HOP) {
+        st.chainHit++;
+        const [x, y] = nd[st.chainHit + 1];
+        for (let i = 0; i < 8; i++) { const a = R.range(0, TAU), v = p.sparkSpeed * R.range(0.3, 0.7); spawn(st, 'spark', x, y, Math.cos(a) * v, Math.sin(a) * v, R.range(0.25, 0.6)); }
+        for (let i = 0; i < 3; i++) spawnPuff(st, x, y, R.range(-25, 25), R.range(-30, 5), 0.7);
+        st.lights.push({ x, y, r: 26, c: st.C[6], k: 0.9, life: 0.35, max: 0.35 });
+      }
+    }
+    if (rec.shape === 'firework' && st.hit) {
+      // stars crackle into white pops as they burn out
+      const e = t - IMP;
+      if (e > 0.8 && e < 1.4 && R() < 0.5) { const sp = st.ps.filter((q) => q.k === 'spark'); if (sp.length) { const q = sp[Math.floor(R() * sp.length)]; spawn(st, 'twinkle', q.x, q.y, 0, 0, R.range(0.15, 0.3)); } }
     }
     if (rec.shape === 'beam' && st.hit && t - IMP < p.beam) {
       const back = p.dir > 0 ? Math.PI : 0, mx = muzzleX(rec);
@@ -1032,6 +1159,66 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     glow(cx, FLOOR - 4, 16 + w * 2, WHITE, 0.6 * (1 - e / p.hold));
   }
 
+  function drawSpikes(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, flash = e >= p.spikeHold - 0.05;
+    for (const sp of spikeList(rec)) {
+      const r = clamp((e - sp.delay) / 0.08);
+      if (r <= 0) continue;
+      const h = sp.h * (1 - Math.pow(1 - r, 3)), w = 2 + sp.h * 0.2, tx = sp.x + sp.lean * h, ty = FLOOR - h;
+      poly([[sp.x - w, FLOOR], [tx, ty], [sp.x, FLOOR]], flash ? WHITE : C[6]);
+      poly([[sp.x, FLOOR], [tx, ty], [sp.x + w, FLOOR]], flash ? WHITE : C[4]);
+      line(sp.x, FLOOR - 1, tx, ty, flash ? WHITE : C[7]);
+      put(tx, ty, WHITE);
+      glow(tx, ty + h * 0.4, h * 0.6 + 3, C[6], flash ? 0.8 : 0.3);
+    }
+  }
+  // the three marks between tail and head of their length, cooling with heat; flash draws them white
+  function drawClaw(st, j, tail, head, heat, flash) {
+    const rec = st.rec, p = rec.p, C = st.C, n = Math.ceil(p.clawLen * 2), dotted = heat < 0.3;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      if (u < tail || u > head || (dotted && i % 2)) continue;
+      const w = dotted ? 0 : p.clawW * Math.pow(Math.sin(Math.PI * u), 0.8) * (0.5 + 0.5 * heat);
+      for (let d = -w; d <= w + 0.01; d += 0.5) {
+        const [x, y] = clawPt(rec, j, u, d), depth = Math.abs(d) / Math.max(w, 0.5), idx = clamp((depth < 0.35 ? 7 : depth < 0.7 ? 6 : 5) - Math.round((1 - heat) * 4), 1, 7);
+        put(x, y, flash || (heat > 0.95 && depth < 0.35) ? WHITE : C[idx], dotted ? heat / 0.3 : 1);
+      }
+      if (i % 4 === 0) { const [x, y] = clawPt(rec, j, u); addL(Math.floor(x), Math.floor(y), C[6], (flash ? 0.7 : 0.35) * heat); }
+    }
+  }
+  function drawChain(st, e) {
+    const rec = st.rec, C = st.C, t = st.t;
+    st.arcs.forEach((v, k) => {
+      const t0 = k === 0 ? -0.03 : (k - 1) * CHAIN_HOP + CHAIN_HOP, u = (e - t0) / (0.35 + 0.15 * k);
+      if (u < 0 || u > 1) return;
+      const frame = Math.floor(t * 30 + k) % 3;
+      if (u > 0.6 && frame === 2) return;
+      const pts = v[frame];
+      polyline(pts.map(([x, y]) => [x + 1, y]), C[5], 0.8 * (1 - u));
+      polyline(pts, u < 0.4 ? WHITE : C[7], 1 - u * 0.5);
+      for (let i = 1; i < pts.length; i += 2) glow(pts[i][0], pts[i][1], 6, C[6], 0.4 * (1 - u));
+    });
+  }
+  function drawWave(st, e) {
+    const rec = st.rec, p = rec.p, C = st.C, d = p.dir, x = waveX(rec, e), q = e / p.waveT, h = p.waveH * Math.sin(Math.PI * Math.min(1, q * 1.2));
+    // a scorched trail it leaves on the floor
+    line(p.x, FLOOR + 1, x, FLOOR + 1, C[3], 0.7 * (1 - q));
+    if (h < 0.8) return;
+    // the crest: a peak just behind the front, falling away behind it, foam on top and a lip curling forward
+    for (let dx = 0; dx <= 20; dx++) {
+      const hc = h * (dx < 4 ? 0.65 + (0.35 * dx) / 4 : Math.pow(1 - (dx - 4) / 16, 1.2)), cx = x - d * dx;
+      for (let y = 0; y < hc; y++) {
+        const f = y / hc;
+        put(cx, FLOOR - 1 - y, f > 0.85 ? (dx < 5 ? WHITE : C[7]) : f > 0.55 ? C[6] : f > 0.25 ? C[5] : C[3]);
+      }
+      if (dx % 3 === 0) addL(Math.floor(cx), Math.floor(FLOOR - hc), C[6], 0.5);
+    }
+    // the lip curls over the front
+    for (let k = 1; k <= 3; k++) put(x + d * k, FLOOR - h * (1 - k * 0.07), k === 1 ? WHITE : C[7]);
+    put(x + d * 3, FLOOR - h * 0.72, C[6]); put(x + d * 2, FLOOR - h * 0.6, C[5], 0.7);
+    glow(x - d * 3, FLOOR - h * 0.6, h + 6, C[6], 0.5);
+  }
+
   function draw(st, hero) {
     const rec = st.rec, p = rec.p, t = st.t, C = st.C, FR = st.FR, IMP = p.wind, e = t - IMP;
     const [cx, cy] = center(rec), [fx, fy] = focus(rec), ground = !airy(rec);
@@ -1082,6 +1269,14 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (e >= 0 && rec.shape === 'slash') { const q = clamp(e / 0.5); if (q < 1) drawSlash(st, Math.pow(clamp(e / 0.45), 1.5), 1, 1 - q, false); }
     if (e >= 0 && rec.shape === 'beam') drawBeam(st, e);
     if (e >= 0 && rec.shape === 'pillar') drawPillar(st, e);
+    if (e >= 0 && rec.shape === 'spikes' && e < p.spikeHold) drawSpikes(st, e);
+    if (e >= 0 && rec.shape === 'wave' && e < p.waveT) drawWave(st, e);
+    if (rec.shape === 'chain' && e >= -0.03) drawChain(st, e);
+    if (e >= 0 && rec.shape === 'claw') {
+      // the marks cool, close up from both ends and leave a dotted scar
+      const q = clamp(e / 0.7), close = clamp(e / 0.55) * 0.5;
+      if (q < 1) for (let j = 0; j < 3; j++) drawClaw(st, j, close, 1 - close, 1 - q, false);
+    }
     // front layer
     let flames = 0;
     for (const q of st.ps) {
@@ -1227,6 +1422,37 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         glow(cx, FLOOR, 8 + 20 * u, C[5], 0.5 * u);
         const w = 3 + 10 * u;
         line(cx - w, FLOOR + 1, cx + w, FLOOR + 1, (v) => (Math.abs(v - 0.5) < 0.15 ? C[7] : C[5]), (v) => u * (1 - Math.abs(v - 0.5) * 1.6));
+      } else if (rec.shape === 'implosion') {
+        // a dark sphere collapses onto a crushed white point while rings contract
+        const r = p.implR * Math.pow(1 - u, 0.8) + 1;
+        for (let k = 0; k < 3; k++) { const rr = p.implR * 1.7 * (1 - frac(u * 2 + k / 3)); if (rr > 2) { const n = Math.ceil(rr * 6); for (let i = 0; i < n; i++) { const g = (i / n) * TAU; put(cx + Math.cos(g) * rr, cy + Math.sin(g) * rr, C[5], 0.6 * (1 - rr / (p.implR * 1.7))); } } }
+        disc(cx, cy, r, C[0], 0.85);
+        const n = Math.max(8, Math.ceil(r * 6));
+        for (let i = 0; i < n; i++) { const g = (i / n) * TAU + t * 3; put(cx + Math.cos(g) * r, cy + Math.sin(g) * r, i % 2 ? C[5] : C[6]); }
+        if (u > 0.8) { circle(cx, cy, 1.2, WHITE); glow(cx, cy, 8, WHITE, (u - 0.8) * 3); }
+        glow(cx, cy, r + 6, C[4], 0.3);
+      } else if (rec.shape === 'firework') {
+        const y = FLOOR - p.alt * (1 - (1 - u) * (1 - u));
+        circle(cx, y, 1.3, C[7]); put(cx, y, WHITE);
+        glow(cx, y, 8, C[6], 0.6);
+      } else if (rec.shape === 'spikes') {
+        // a frost line races along the floor ahead of the blades
+        const x0 = p.x - (p.dir * p.spikeLen) / 2, xf = x0 + p.dir * p.spikeLen * u;
+        line(x0, FLOOR + 1, xf, FLOOR + 1, (v) => (v > 0.85 ? WHITE : C[6]), (v) => 0.4 + 0.6 * v);
+        glow(xf, FLOOR, 6, C[6], 0.6);
+      } else if (rec.shape === 'wave') {
+        // the floor swells where the wave will rise
+        const h = u * p.waveH * 0.35;
+        for (let dx = -6; dx <= 6; dx++) { const hh = h * (1 - (dx / 6) ** 2); if (hh >= 0.5) line(cx + dx, FLOOR - 1, cx + dx, FLOOR - hh, dx === 0 ? C[6] : C[5]); }
+        glow(cx, FLOOR, 8 + 10 * u, C[5], 0.4 * u);
+      } else if (rec.shape === 'chain') {
+        const [hx, hy] = chainNodes(rec)[0], r = 1 + 2.5 * u + Math.sin(t * 40) * 0.5 * u;
+        circle(hx, hy, r + 1, C[5]); circle(hx, hy, r, u > 0.7 ? WHITE : C[7]);
+        glow(hx, hy, 6 + 12 * u, C[6], 0.3 + 0.5 * u);
+      } else if (rec.shape === 'claw') {
+        // the marks rake down one after another just before contact
+        for (let j = 0; j < 3; j++) { const r = clamp((t - (IMP - CLAW_START + j * 0.04)) / CLAW_RAKE); if (r > 0) drawClaw(st, j, Math.max(0, r - 0.7), r, 1, false); }
+        if (t < IMP - CLAW_START) { const [gx, gy] = clawPt(rec, 1, 0); if (u > 0.3) sparkle(Math.round(gx), Math.round(gy), Math.round(1 + 2 * Math.sin(Math.PI * (u - 0.3) / 0.7)), C[7], C[5]); }
       } else if (rec.shape === 'slash') {
         // a glint where the blade starts, then the sweep in the last few hundredths of a second
         const sw = clamp((t - (IMP - SWEEP)) / SWEEP), [gx, gy] = slashPt(rec, 0);
@@ -1265,6 +1491,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (hero) {
       const r = p.hero;
       if (rec.shape === 'slash') { drawSlash(st, 0, 1, 1, true); glow(fx, fy, p.slashR * 1.2, WHITE, 0.6); }
+      else if (rec.shape === 'claw') { for (let j = 0; j < 3; j++) drawClaw(st, j, 0, 1, 1, true); glow(fx, fy, p.clawLen, WHITE, 0.6); }
       else if (rec.mat === 'void') { circle(fx, fy, r + 1.5, WHITE); circle(fx, fy, r - 1.5, C[0]); glow(fx, fy, r * 4, C[6], 1.1); }
       else { circle(fx, fy, r + 1.5, C[7]); circle(fx, fy, r, WHITE); glow(fx, fy, r * 4.5, WHITE, 1.2); }
     }
@@ -1305,6 +1532,12 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   function wisp(st, x, y, u, size, sd) {
     const C = st.C, FR = st.FR, k = 1 - u;
     switch (st.rec.mat) {
+      case 'none': {
+        // no material: a plain mote of light, so trails and tongues keep their motion
+        put(x, y, u < 0.4 ? C[7] : C[5], k);
+        addL(Math.floor(x), Math.floor(y), C[6], 0.3 * k);
+        break;
+      }
       case 'flame': {
         const n = FR.length, idx = Math.min(n - 2, Math.floor(Math.pow(u, 0.7) * (n - 1))), r = size * (1 - u * 0.6);
         if (idx >= n - 2) { disc(x, y, r, FR[idx], k * 0.8); break; }
@@ -1755,7 +1988,135 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     arcs(st, ph, (f, a) => [hx, hy, hx - d * (8 + rnd[(f * 3 + a) & 255] * p.trail * 0.6), hy + (rnd[(f * 5 + a) & 255] - 0.5) * 12]);
     glow(hx, hy, R0 * 6, C[6], 0.7);
   }
-  const LOOP_DRAW = { aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune, torch: drawTorch, orb: drawOrb, shield: drawShield, missile: drawMissile };
+
+  // a fountain: a stone basin, a jet that rises and breaks into arcs of the material falling back with little rings
+  function drawFountain(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, B = FLOOR - 2, H = p.jetH, bw = p.basin, ry = bw * 0.3;
+    const stone = (g) => (Math.cos(g) > 0.3 ? [72, 64, 88] : [50, 44, 64]);
+    glow(cx, FLOOR, bw * 2.5, C[5], 0.3);
+    flatRing(cx, B, bw, 0.3, true, stone, 1, 0);
+    for (let sy = Math.floor(B - ry); sy <= Math.ceil(B + ry); sy++) {
+      const f = (sy + 0.5 - B) / ry, hw = bw * Math.sqrt(Math.max(0, 1 - f * f)) - 1;
+      for (let sx = Math.ceil(cx - hw); sx <= Math.floor(cx + hw); sx++) put(sx, sy, Math.sin(sx * 0.9 + sy * 2 - TAU * ph * p.m * 2) > 0.8 ? C[6] : C[3], 0.85);
+    }
+    // the jet: a column that ripples as surges run up it
+    for (let y = 0; y < H; y++) {
+      const w = 0.8 + (1 - y / H) * 1.2 + Math.sin(y * 0.6 - TAU * ph * p.m * 4) * 0.4;
+      line(cx - w, B - y, cx + w, B - y, y > H - 3 ? WHITE : C[6]);
+      put(cx, B - y, C[7]);
+      if (y % 4 === 0) addL(cx, B - y, C[6], 0.3);
+    }
+    for (let i = 0; i < p.tongues * 2; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i]), side = rnd[i + 40] < 0.5 ? -1 : 1, reach = side * (4 + rnd[i + 80] * p.arcSpread), top = H * (0.75 + 0.25 * rnd[i + 120]);
+      const x = cx + reach * u, y = B - top + top * u * u;
+      wisp(st, x, y, u * 0.75, 1 + rnd[i + 160] * 1.2, i);
+      if (u > 0.88) flatRing(cx + reach, B, 1 + (u - 0.88) * 25, 0.3, false, () => C[6], 1 - (u - 0.88) / 0.12, 0.2);
+    }
+    arcs(st, ph, (f, a) => [cx, B - H, cx + (rnd[(f * 3 + a) & 255] - 0.5) * p.arcSpread * 2.4, B]);
+    flatRing(cx, B, bw, 0.3, false, stone, 1, 0);
+    glow(cx, B - H, 10, C[6], 0.5);
+  }
+
+  // a cloud: blobs that swell and shrink, lit from above, raining the material onto the floor
+  function drawCloud(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, cy = p.cloudY, hw = p.cloudW / 2, base = cy + 6;
+    for (let i = 0; i < p.fall; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i]), x = cx + (rnd[i + 40] - 0.5) * hw * 1.8 + u * 4, y = base + u * (FLOOR - base);
+      wisp(st, x, y, u * 0.6, 0.8 + rnd[i + 80] * 0.8, i);
+      if (u > 0.94) { put(x - 1, FLOOR - 1, C[6], 0.8); put(x + 1, FLOOR - 1, C[6], 0.8); }
+    }
+    const blobs = [];
+    for (let i = 0; i < p.blobs; i++) {
+      const f = p.blobs > 1 ? i / (p.blobs - 1) : 0.5;
+      blobs.push([cx + (f - 0.5) * hw * 1.8, cy - Math.sin(Math.PI * f) * 6 + (rnd[i + 120] - 0.5) * 3, (5 + Math.sin(Math.PI * f) * 6 + rnd[i + 160] * 3) * (1 + 0.1 * Math.sin(TAU * (ph * p.m + rnd[i + 200])))]);
+    }
+    for (const [x, y, r] of blobs) circle(x, y, r + 1, C[1]);
+    for (const [x, y, r] of blobs) { circle(x, y, r, C[2]); circle(x - r * 0.2, y - r * 0.3, r * 0.7, C[3]); circle(x - r * 0.3, y - r * 0.5, r * 0.35, C[5]); }
+    line(cx - hw * 0.9, base, cx + hw * 0.9, base, C[1]);
+    // only a storm flashes inside; other clouds glow steadily, breathing once a loop
+    const strike = p.arcs && Math.floor(ph * p.period * 15) % 3 !== 0;
+    glow(cx, cy, hw * 1.2, C[5], strike ? 0.6 : 0.2 + 0.08 * Math.sin(TAU * ph * p.m));
+    arcs(st, ph, (f, a) => [cx + (rnd[(f * 3 + a) & 255] - 0.5) * hw, base, cx + (rnd[(f * 5 + a) & 255] - 0.5) * hw * 1.4, FLOOR]);
+    glow(cx, FLOOR, hw, C[5], 0.15);
+  }
+
+  // a beacon: a steel pad with ripples, a soft column of light, and rings of light lifting off it
+  function drawBeacon(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, R0 = p.padR, top = FLOOR - p.colH, py = FLOOR + 1;
+    glow(cx, FLOOR, R0 * 2, C[6], 0.45);
+    for (let sy = Math.floor(py - R0 * 0.3); sy <= Math.ceil(py + R0 * 0.3); sy++) {
+      const f = (sy + 0.5 - py) / (R0 * 0.3), hw = R0 * Math.sqrt(Math.max(0, 1 - f * f));
+      if (hw >= 0.5) line(cx - hw, sy, cx + hw, sy, [44, 40, 58]);
+    }
+    for (const back of [true, false]) {
+      flatRing(cx, py, R0, 0.3, back, () => C[4], 1, 0.2);
+      for (let k = 0; k < 2; k++) { const r = R0 * frac(ph * p.m + k / 2); if (r > 1) flatRing(cx, py, r, 0.3, back, () => C[6], 1 - r / R0, 0.3); }
+    }
+    for (let y = Math.floor(top); y <= FLOOR; y++) {
+      const f = (FLOOR - y) / (FLOOR - top), w = R0 * 0.7 * (1 - f * 0.4) + Math.sin(y * 0.4 - TAU * ph * p.m * 3) * 0.8;
+      for (let dx = -Math.floor(w); dx <= Math.floor(w); dx++) { const edge = Math.abs(dx) > w - 1.5; put(cx + dx, y, edge ? C[6] : C[5], (edge ? 0.55 : 0.2) * (1 - f)); }
+      addL(cx, y, C[6], 0.12 * (1 - f));
+    }
+    for (let k = 0; k < p.lifts; k++) {
+      const u = frac(ph * p.m + k / p.lifts), y = py - u * (py - top), r = R0 * (0.9 - 0.3 * u);
+      flatRing(cx, y, r, 0.3, true, () => C[6], 1 - u, 0.2);
+      flatRing(cx, y, r, 0.3, false, () => (u < 0.3 ? WHITE : C[7]), 1 - u, 0.35);
+    }
+    for (let i = 0; i < p.wisps; i++) {
+      const u = frac(ph * p.m + rnd[i]);
+      wisp(st, cx + (rnd[i + 40] - 0.5) * R0 * 1.2, FLOOR - u * (FLOOR - top), u, 1 + rnd[i + 80], i);
+    }
+    arcs(st, ph, (f, a) => { const g = rnd[(f * 3 + a) & 255] * TAU; return [cx + Math.cos(g) * R0, py + Math.sin(g) * R0 * 0.3, cx + (rnd[(f * 5 + a) & 255] - 0.5) * R0, FLOOR - rnd[(f * 7 + a) & 255] * p.colH * 0.6]; });
+  }
+
+  // a swarm: bright motes on closed figure-of-eight paths, each trailing the material
+  function drawSwarm(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, cx = p.x, cy = FLOOR - p.hover, sy = Math.min(p.sy, p.hover - 4);
+    const pos = (i, q) => {
+      const a = 1 + Math.floor(rnd[i] * 2), b = 1 + Math.floor(rnd[i + 30] * 3);
+      return [cx + p.roam * (0.5 + 0.5 * rnd[i + 60]) * Math.sin(TAU * a * p.m * q + rnd[i + 90] * TAU), cy + sy * (0.5 + 0.5 * rnd[i + 120]) * Math.sin(TAU * b * p.m * q + rnd[i + 150] * TAU)];
+    };
+    glow(cx, FLOOR, p.roam, C[5], 0.25);
+    for (let i = 0; i < p.swarm; i++) {
+      for (let j = 0; j < 2; j++) {
+        const u = frac(ph * p.m * 2 + rnd[(i * 3 + j + 180) & 255]), [x, y] = pos(i, ph - u * 0.12);
+        wisp(st, x, y, u, 0.8 + rnd[(i * 5 + j) & 255] * 0.8, i * 3 + j);
+      }
+      for (let d = 4; d >= 0; d--) {
+        const [x, y] = pos(i, ph - d * 0.012);
+        put(x, y, d === 0 ? WHITE : d === 1 ? C[7] : d < 3 ? C[6] : C[4], d === 0 ? 1 : 0.95 - d * 0.18);
+      }
+      const [x, y] = pos(i, ph);
+      put(x + 1, y, C[7]); put(x, y + 1, C[7]); put(x, y, WHITE);
+      glow(x, y, 7, C[6], 0.55);
+    }
+    arcs(st, ph, (f, a) => { const i0 = Math.floor(rnd[(f * 3 + a) & 255] * p.swarm), i1 = (i0 + 1 + a) % Math.max(1, p.swarm); return [...pos(i0, ph), ...pos(i1, ph)]; });
+  }
+
+  // breath: a stream of the material pouring out of a spout in a widening cone, white-hot at the lips
+  function drawBreath(st, t) {
+    const p = st.rec.p, C = st.C, rnd = st.rnd, ph = t / p.period, d = p.dir, mx = clamp(p.x - d * p.reach * 0.5, 12, 148), my = FLOOR - p.mouthY;
+    const iron = [44, 39, 56];
+    poly([[mx - d * 10, my - 4], [mx, my - 2], [mx, my + 2], [mx - d * 10, my + 4]], iron);
+    line(mx - d * 10, my - 4, mx, my - 2, mixC(iron, C[4], 0.5));
+    for (let i = 0; i < p.tongues * 4; i++) {
+      const u = frac(ph * p.m * 2 + rnd[i & 255]), ang = (rnd[(i + 70) & 255] - 0.5) * p.cone * 2, dist = p.reach * (1 - (1 - u) * (1 - u));
+      wisp(st, mx + d * Math.cos(ang) * dist, my + Math.sin(ang) * dist + u * u * 6, u, 1.3 + u * 3 * (0.6 + rnd[(i + 140) & 255] * 0.6), i);
+    }
+    for (let j = 0; j < 6; j++) {
+      const u = frac(ph * p.m * 3 + rnd[j + 200]), ang = (rnd[j + 220] - 0.5) * p.cone, dist = u * p.reach * 0.8, x = mx + d * Math.cos(ang) * dist, y = my + Math.sin(ang) * dist;
+      line(x, y, x - d * 5, y, C[7], 0.8 * (1 - u));
+    }
+    poly([[mx, my - 1], [mx + d * 12, my - 3], [mx + d * 12, my + 3], [mx, my + 1]], C[6]);
+    line(mx, my, mx + d * 8, my, WHITE);
+    arcs(st, ph, (f, a) => { const u0 = rnd[(f * 3 + a) & 255] * 0.5; return [mx + d * u0 * p.reach, my, mx + d * (u0 + 0.3) * p.reach, my + (rnd[(f * 5 + a) & 255] - 0.5) * p.cone * p.reach]; });
+    glow(mx + d * 8, my, 12, WHITE, 0.6);
+    glow(mx + d * p.reach * 0.5, my, p.reach * 0.5, C[5], 0.3);
+  }
+  const LOOP_DRAW = {
+    aura: drawAura, portal: drawPortal, vortex: drawVortex, rune: drawRune, torch: drawTorch, orb: drawOrb, shield: drawShield, missile: drawMissile,
+    fountain: drawFountain, cloud: drawCloud, beacon: drawBeacon, swarm: drawSwarm, breath: drawBreath,
+  };
 
   function composite(view, img) {
     if (view === 'clear') return compositeClear(img);
@@ -1981,8 +2342,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
 
   // ---------------------------------------------------------------- the page
-  // new effects come from the second generation, which also holds every first-generation shape and material
-  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return GEN1 + 1 + (a[0] % (MAX_SEED - GEN1)); };
+  // new effects come from the newest generation, which also holds every earlier shape and material
+  const randomSeed = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return GEN2 + 1 + a[0]; };
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const off = document.createElement('canvas'); off.width = W; off.height = H;
   const octx = off.getContext('2d'), img = octx.createImageData(W, H);
@@ -2046,7 +2407,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const { shape, mat, p } = editBase(base, edits), opt = (v, label) => `<option value="${v}">${label}</option>`;
     $('ed-shape').innerHTML = `<optgroup label="One-shots">${ALL_SHOTS.map((v) => opt(v, NOUN[v])).join('')}</optgroup><optgroup label="Loops">${ALL_LOOPS.map((v) => opt(v, NOUN[v])).join('')}</optgroup>`;
     $('ed-shape').value = shape;
-    $('ed-mat').innerHTML = ALL_MATS.map((v) => opt(v, `${capital(v)} · ${ADJ[v]}`)).join('');
+    $('ed-mat').innerHTML = EDIT_MATS.map((v) => opt(v, v === 'none' ? 'None · no material' : `${capital(v)} · ${ADJ[v]}`)).join('');
     $('ed-mat').value = mat;
     $('ed-hue').value = edits.hue || 0;
     $('ed-sat').value = edits.sat ?? 1;
@@ -2085,10 +2446,10 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const rec = pl.rec;
     if (rec.loop) return `Loop · repeats every ${rec.p.period} s with no seam`;
     const W0 = rec.p.wind, e = s - W0, tail = sustain(rec);
-    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor' }[rec.shape];
+    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor', implosion: 'Anticipation · everything is pulled in', firework: 'Anticipation · the shell climbs', spikes: 'Anticipation · a line races along the floor', wave: 'Anticipation · the floor swells', chain: 'Anticipation · a charge builds in the hand', claw: 'Anticipation · a glint, then the claws rake' }[rec.shape];
     if (S.hitstop && pl.tt < W0 + rec.p.stop) return 'Contact · hit-stop and white hero frame';
     if (e < 0.15) return 'Release · flare, rings, burst';
-    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
+    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : rec.shape === 'wave' ? 'Release · the wave rolls across the floor' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
     if (e < 2.2 + tail) return 'Hold · embers drift, light fades';
     if (e < 3.2 + tail) return 'Decay · the last of it clears';
     return 'Empty · a one-shot ends with nothing left';
