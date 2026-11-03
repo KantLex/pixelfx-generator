@@ -87,6 +87,7 @@ in the middle, and the hue leans toward yellow in the highlights.
 - Copy the recipe as JSON.
 - Switch off the light buffer, the dither or the hit-stop to see what each one does.
 - Switch the **look** between **Pixel**, **Cel outline** and **Handheld**.
+- Switch the page's **language** between English, 日本語, 繁體中文 and 简体中文 (top right).
 - Edit the effect by hand: shape, material, palette and timing.
 - Export the effect as a sprite sheet with frame data, or as a GIF.
 
@@ -112,6 +113,17 @@ Edits are stored after the seed in the link, for example `#s20482~hue:60,shape:b
 can be shared and reopens exactly. A plain `#s` link still opens the seed as it is. The recipe JSON and the exports
 include the edits, and exported files get `-edited` in their name. **Reset to the seed** clears them, and
 **Generate** starts fresh.
+
+## Languages
+
+The page is in English, Japanese, Traditional Chinese and Simplified Chinese. The switch at the top right changes
+every label, caption, note and effect name ("Burning Rose Nova" becomes 燃える薔薇色のノヴァ, 燃燒的玫瑰新星 or
+燃烧的玫瑰新星). The first visit follows the browser's language, and the choice is remembered on that device.
+
+The UI effects draw their words in the chosen language too: **LEVEL UP!** becomes レベルアップ!, 升級! or 升级!, and
+**CRIT!** becomes 会心!, 暴擊! or 暴击!. Those characters come from a small set of 12-pixel glyphs drawn by hand for
+this page. Exports use the language that was showing, and their JSON records it as `"language"`. Links stay the same
+in every language.
 
 ## Looks
 

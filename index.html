@@ -6,7 +6,7 @@
 <title>Pixel VFX Anatomy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=DotGothic16&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: one 860px column. Generator stage up top (name, screen, transport, controls), a strip of six live variations, then notes and a comparison. Single dark look on purpose: pixel VFX are judged on a dark ground. */
 :root {
@@ -36,6 +36,12 @@ body {
 }
 .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
 header { display: flex; flex-direction: column; gap: 10px; }
+.top-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.langs label { font-size: 13px; padding: 3px 9px; }
+/* CJK falls back to system fonts that have the characters; Japanese headings get a pixel face */
+:root:lang(ja) { --display: "Silkscreen", "DotGothic16", "Hiragino Kaku Gothic ProN", monospace; --body: "Atkinson Hyperlegible", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif; }
+:root:lang(zh-Hant) { --body: "Atkinson Hyperlegible", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", system-ui, sans-serif; }
+:root:lang(zh-Hans) { --body: "Atkinson Hyperlegible", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif; }
 .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .eyebrow a { color: inherit; }
 h1, h2 { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
@@ -157,14 +163,17 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Study notes · <a href="https://github.com/patch-gg/pixelfx">patch-gg/pixelfx</a></div>
+    <div class="top-row">
+      <div class="eyebrow">Study notes · <a href="https://github.com/patch-gg/pixelfx">patch-gg/pixelfx</a></div>
+      <div class="seg langs" role="radiogroup" aria-label="Language" id="langs"></div>
+    </div>
     <h1>Pixel VFX <span>Anatomy</span></h1>
     <p class="lede">A generator for code-drawn pixel effects, built from a study of how PixelFX draws its art. Every seed produces a different effect, either a one-shot like a strike or a seamless loop like an aura or portal. Its shape, material, timing and palette all come from that one number. No image files. Each frame is computed at 160 × 96 and scaled up without smoothing.</p>
   </header>
 
   <div class="stage" aria-label="Effect generator">
     <div class="titlebar">
-      <div class="name" id="name">Generating…</div>
+      <div class="name" id="name"></div>
       <form class="seedbox" id="seed-form">
         <label for="seed-in">seed</label>
         <input id="seed-in" inputmode="numeric" autocomplete="off" aria-label="Seed number">
@@ -195,9 +204,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         </div></div>
       <div class="group"><span class="lbl">When generating</span>
         <div class="checks">
-          <label><input type="checkbox" id="keep-pal"> Keep this palette</label>
-          <label><input type="checkbox" id="keep-shape"> Keep this shape and timing</label>
-          <label><input type="checkbox" id="auto"> New effect after each play</label>
+          <label><input type="checkbox" id="keep-pal"> <span>Keep this palette</span></label>
+          <label><input type="checkbox" id="keep-shape"> <span>Keep this shape and timing</span></label>
+          <label><input type="checkbox" id="auto"> <span>New effect after each play</span></label>
         </div></div>
       <div class="group"><span class="lbl">View buffer</span>
         <div class="seg" role="radiogroup" aria-label="View buffer">
@@ -228,12 +237,12 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
         </div></div>
     </div>
     <details class="recipe edit" id="edit-box" open>
-      <summary>Edit this effect <span class="badge" id="edited" hidden>edited</span><span class="hint">shape, material, colours, size and timing</span></summary>
+      <summary><span>Edit this effect</span> <span class="badge" id="edited" hidden>edited</span><span class="hint">shape, material, colours, size and timing</span></summary>
       <div class="edit-grid">
         <div class="group"><label class="lbl" for="ed-shape">Shape</label><select id="ed-shape"></select></div>
         <div class="group"><label class="lbl" for="ed-mat">Material</label><select id="ed-mat"></select></div>
-        <div class="group"><label class="lbl" for="ed-hue">Hue <output id="ed-hue-v"></output></label><input type="range" id="ed-hue" min="-180" max="180" step="5"></div>
-        <div class="group"><label class="lbl" for="ed-sat">Saturation <output id="ed-sat-v"></output></label><input type="range" id="ed-sat" min="0" max="1.6" step="0.05"></div>
+        <div class="group"><label class="lbl" for="ed-hue"><span>Hue</span> <output id="ed-hue-v"></output></label><input type="range" id="ed-hue" min="-180" max="180" step="5"></div>
+        <div class="group"><label class="lbl" for="ed-sat"><span>Saturation</span> <output id="ed-sat-v"></output></label><input type="range" id="ed-sat" min="0" max="1.6" step="0.05"></div>
         <div class="group wide"><span class="lbl">Palette, dark to bright</span><div class="swatches" id="ed-swatches"></div></div>
         <div class="knobs wide" id="ed-knobs"></div>
         <div class="wide edit-row"><button id="ed-reset" type="button">Reset to the seed</button> <span class="caption">Edits ride along in the link, the recipe and the exports.</span></div>
@@ -444,6 +453,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   // the look the frame is finished in: 'pixel' (dither, smooth glow), 'cel' (hard shapes, ink outlines, banded glow)
   // or 'handheld' (four shades of one tint, like an old handheld screen)
   let look = 'pixel';
+  // the page's language; the UI effects draw their words in it
+  let lang = 'en';
   const LOOKS = ['pixel', 'cel', 'handheld'];
 
   (function makeBackground() {
@@ -808,7 +819,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     { id: 'gravity', label: 'Gravity', min: 0.2, max: 2, mult: ['gravity'], shot: true },
     { id: 'stop', label: 'Hit-stop', min: 0, max: 3, mult: ['stop'], shot: true },
     { id: 'shake', label: 'Screen shake', min: 0, max: 3, mult: ['shake'], shot: true },
-    { id: 'period', label: 'Loop length', pick: 'period', values: [1, 1.5, 2, 2.5, 3, 4, 5, 6], names: (v) => `${v} s`, loop: true },
+    { id: 'period', label: 'Loop length', pick: 'period', values: [1, 1.5, 2, 2.5, 3, 4, 5, 6], names: (v) => t('{0} s', v), loop: true },
     { id: 'tempo', label: 'Cycles per loop', pick: 'm', values: [1, 2, 3], names: (v) => `${v}`, loop: true },
     { id: 'spin', label: 'Spin', pick: 'spin', values: [1, -1], names: (v) => (v > 0 ? 'Clockwise' : 'Counter-clockwise'), loop: true },
     { id: 'dir', label: 'Facing', pick: 'dir', values: [1, -1], names: (v) => (v > 0 ? 'Right' : 'Left') },
@@ -1331,14 +1342,25 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     '+': [0, 2, 7, 2, 0], '-': [0, 0, 7, 0, 0], '!': [2, 2, 2, 0, 2], ' ': [0, 0, 0, 0, 0],
     L: [4, 4, 4, 4, 7], E: [7, 4, 6, 4, 7], V: [5, 5, 5, 5, 2], U: [5, 5, 5, 5, 7], P: [6, 5, 6, 4, 4], C: [7, 4, 4, 4, 7], R: [6, 5, 6, 5, 5], I: [7, 2, 2, 2, 7], T: [7, 2, 2, 2, 2],
   };
-  const textW = (str, sc) => (str.length * 4 - 1) * sc;
-  // text with a one-pixel ink outline and a lighter top row, so it reads over anything; dy shifts single letters
+  // 12 px glyphs, drawn by hand, for the words the UI effects say in Japanese and Chinese; they are never scaled
+  const BIG = {"レ": ["..........", ".#........", ".#........", ".#........", ".#........", ".#........", ".#......#.", ".#.....#..", ".#....#...", ".#..##....", ".###......", ".........."], "ベ": ["......#.#.", ".......#.#", "..........", "...#......", "..#.#.....", ".#...#....", "#.....#...", ".......#..", "........#.", ".........#", "..........", ".........."], "ル": ["..........", "..#...#...", "..#...#...", "..#...#...", "..#...#...", "..#...#...", "..#...#..#", ".#....#.#.", ".#....##..", "#.....#...", "..........", ".........."], "ア": ["..........", "##########", ".........#", "....#...#.", "....#..#..", "....#.....", "....#.....", "...#......", "..#.......", ".#........", "..........", ".........."], "ッ": ["........", "........", "........", "........", "........", ".#.#..#.", ".#.#..#.", "......#.", ".....#..", "...##...", "........", "........"], "プ": ["........#.", "######.#.#", ".....#..#.", ".....#....", "....#.....", "....#.....", "...#......", "..#.......", ".#........", "#.........", "..........", ".........."], "会": [".....##.....", "....#..#....", "...#....#...", "..#......#..", ".#.######.#.", "#..........#", ".##########.", ".....#......", "....#.......", "...#....#...", "..#......#..", ".##########."], "心": ["....#.......", ".....#......", "......#.....", "...#........", "...#.....#..", "#..#......#.", "#..#.......#", "#..#........", "...#.....#..", "...#....#...", "....#####...", "............"], "升": ["......#.#...", "...###..#...", "....#...#...", "....#...#...", "....#...#...", "############", "....#...#...", "...#....#...", "...#....#...", "..#.....#...", ".#......#...", "#.......#..."], "暴": ["..########..", "..#......#..", "..########..", "..#......#..", "..########..", "...#....#...", "############", "...#....#...", "############", ".#...##...#.", "..#..##..#..", ".#..###...#."], "击": [".....#......", "..#######...", ".....#......", "############", ".....#......", ".#...#...#..", ".#...#...#..", ".#...#...#..", ".#...#...#..", ".#########..", "............", "............"], "擊": [".#..#..###..", "####.#.#.#..", ".##.#.#..##.", "####..#.##..", ".#.#..#..#..", "####.##.#.#.", "...#........", ".##########.", ".....#......", ".#########..", ".....#......", "...###......"], "級": ["..#...######", ".#.....#..#.", "#..#...#..#.", ".##....#.#..", ".#..#..#.###", "#####..#...#", "..#....#..#.", "..#...#.##..", "#.#.#.#..#..", "..#...#.#.#.", "..#....#...#", "......#....."], "级": ["..#...######", ".#.....#..#.", "#..#...#..#.", ".##....#.#..", ".#.....#.###", "#...#..#...#", "#####..#..#.", "......#.##..", "......#..#..", "...##.#.#.#.", "###....#...#", "......#....."]};
+  const WORDS = {"en": {"lv": "LEVEL UP!", "crit": "CRIT!"}, "ja": {"lv": "レベルアップ!", "crit": "会心!"}, "zh-Hant": {"lv": "升級!", "crit": "暴擊!"}, "zh-Hans": {"lv": "升级!", "crit": "暴击!"}};
+  const glyphOf = (ch, sc) => {
+    if (BIG[ch]) { const rows = BIG[ch]; return { w: rows[0].length, h: 12, s: 1, on: (c, r) => rows[r][c] === '#' }; }
+    const g = GLYPHS[ch] || GLYPHS[' '];
+    return { w: 3, h: 5, s: sc, on: (c, r) => !!(g[r] & (4 >> c)) };
+  };
+  const textW = (str, sc) => [...str].reduce((w, ch) => { const g = glyphOf(ch, sc); return w + (g.w + 1) * g.s; }, 0) - sc;
+  // text with a one-pixel ink outline and a lighter top row, so it reads over anything; dy shifts single letters.
+  // Glyphs share a baseline, so 12 px characters stand a little taller than the 3 x 5 font beside them.
   function drawText(str, x0, y0, sc, col, a = 1, dy = () => 0) {
     const lit = new Set(), ink = [10, 8, 16];
+    let ox = x0;
     [...str].forEach((ch, k) => {
-      const g = GLYPHS[ch] || GLYPHS[' '], ox = Math.round(x0 + k * 4 * sc), oy = Math.round(y0 + dy(k));
-      for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) if (g[r] & (4 >> c))
-        for (let yy = 0; yy < sc; yy++) for (let xx = 0; xx < sc; xx++) lit.add((ox + c * sc + xx) + ',' + (oy + r * sc + yy) + ',' + (r === 0 && yy === 0 ? 1 : 0));
+      const g = glyphOf(ch, sc), left = Math.round(ox), top = Math.round(y0 + 5 * sc - g.h * g.s + dy(k));
+      for (let r = 0; r < g.h; r++) for (let c = 0; c < g.w; c++) if (g.on(c, r))
+        for (let yy = 0; yy < g.s; yy++) for (let xx = 0; xx < g.s; xx++) lit.add((left + c * g.s + xx) + ',' + (top + r * g.s + yy) + ',' + (r === 0 && yy === 0 ? 1 : 0));
+      ox += (g.w + 1) * g.s;
     });
     const on = new Set([...lit].map((k) => k.split(',').slice(0, 2).join(',')));
     for (const key of on) { const [x, y] = key.split(',').map(Number); for (const [dx, dy2] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]) if (!on.has((x + dx) + ',' + (y + dy2))) put(x + dx, y + dy2, ink, a); }
@@ -1374,7 +1396,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (fade > 0) { if (fade >= 1) figure(C, L, T); else silhouette(L, T, [36, 32, 48], fade); }
     const cw = p.lvW * (1 - clamp(e / 0.9)) + (e < 0.9 ? 0.6 : 0);
     if (cw > 0.5) for (let y = 0; y < FLOOR; y++) for (let dx = -Math.ceil(cw); dx <= Math.ceil(cw); dx++) { const d = Math.abs(dx) / cw; if (d <= 1) put(p.x + dx, y, d < 0.4 ? WHITE : C[6], d < 0.4 ? 0.8 : 0.4); }
-    const str = 'LEVEL UP!', sc = 2, w = textW(str, sc), x0 = clamp(p.x - w / 2, 3, W - 3 - w), a = 1 - clamp((e - 1.6) / 0.5);
+    const str = WORDS[lang].lv, sc = 2, w = textW(str, sc), x0 = clamp(p.x - w / 2, 3, W - 3 - w), a = 1 - clamp((e - 1.6) / 0.5);
     if (a > 0) drawText(str, x0, 10, sc, C[7], a, (k) => -14 * (1 - backOut(clamp((e - 0.1 - k * 0.05) / 0.25))) - (e < 0.1 + k * 0.05 ? 200 : 0));
   }
   // damage: a number that pops, overshoots and floats off; a critical hit says so and flashes
@@ -1384,7 +1406,8 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const num = '-' + (p.num ?? (p.crit ? p.dmg * 2 : p.dmg)), sc = e < 0.06 ? 3 : 2, rise = 14 * (1 - Math.pow(1 - clamp(e / 1.2), 2)), x = cx + p.dir * e * 6;
     drawText(num, x - textW(num, sc) / 2, cy - rise - (sc * 5) / 2, sc, p.crit ? WHITE : C[7], a);
     if (p.crit) {
-      drawText('CRIT!', x - textW('CRIT!', 2) / 2, cy - rise - (sc * 5) / 2 - 13, 2, C[6], a);
+      const word = WORDS[lang].crit;
+      drawText(word, x - textW(word, 2) / 2, cy - rise - (sc * 5) / 2 - 13, 2, C[6], a);
       if (e < 0.25) for (let k = 0; k < 8; k++) { const g = (k * TAU) / 8 + 0.2, L1 = 9 + e * 50, L2 = L1 + 5; line(x + Math.cos(g) * L1, cy - rise + Math.sin(g) * L1 * 0.7, x + Math.cos(g) * L2, cy - rise + Math.sin(g) * L2 * 0.7, C[6], 1 - e / 0.25); }
     }
   }
@@ -2893,7 +2916,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     const { times, end, contact } = exportTimes(rec, o.fps), pl = makePlayer(rec), frames = [];
     for (const t of times) {
       const im = new ImageData(W, H);
-      pl.tt = t; dither = o.dither; look = o.look || 'pixel';
+      pl.tt = t; dither = o.dither; look = o.look || 'pixel'; lang = o.lang || lang;
       renderPlayer(pl, o.clear ? 'clear' : 'final', o.hitstop, im);
       if (o.shake) shift(im, ...shakeOf(rec, t));
       frames.push(im);
@@ -2933,7 +2956,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       },
       effect: {
         name: rec.name, seed: rec.seed, loop: rec.loop, fps: o.fps, frameCount: n, seconds: +(cap.end - cap.times[0]).toFixed(3),
-        background: o.clear ? 'transparent' : 'backdrop', partialAlpha: o.dither ? 'dither' : 'blend', look: o.look || 'pixel', hitStop: o.hitstop,
+        background: o.clear ? 'transparent' : 'backdrop', partialAlpha: o.dither ? 'dither' : 'blend', look: o.look || 'pixel', language: o.lang || 'en', hitStop: o.hitstop,
         contactFrame: rec.loop ? null : cap.contact,
         // left out of the frames: a game should move its camera instead
         cameraShake: rec.loop ? null : { fromFrame: cap.contact, seconds: 0.3, pixels: +(rec.p.shake * o.scale).toFixed(2), falloff: 'linear' },
@@ -3067,8 +3090,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     else if (reduce) main.tt = restTime(rec);
     $('back').disabled = !history.length;
     $('edited').hidden = !rec.edits;
-    const words = rec.name.split(' ');
-    $('name').innerHTML = `${words.slice(0, -1).join(' ')} <span>${words[words.length - 1]}</span>`;
+    $('name').innerHTML = nameHTML(rec);
     $('seed-in').value = rec.seed;
     $('scrub').max = rec.total.toFixed(2);
     const root = document.documentElement.style;
@@ -3095,6 +3117,68 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     dirty = true;
   }
 
+  // ---------------------------------------------------------------- languages
+  // English, Japanese, Traditional and Simplified Chinese. Static text is swapped whole, element by element, keyed by
+  // its English wording; text made in code goes through t(). Effect names are put together per language.
+  const LANGS = [['en', 'EN'], ['ja', '日本語'], ['zh-Hant', '繁中'], ['zh-Hans', '简中']];
+  const LI = { ja: 0, 'zh-Hant': 1, 'zh-Hans': 2 };
+  const STATIC_TR = {"Study notes · patch-gg/pixelfx": ["研究ノート · <a href=\"https://github.com/patch-gg/pixelfx\">patch-gg/pixelfx</a>", "研究筆記 · <a href=\"https://github.com/patch-gg/pixelfx\">patch-gg/pixelfx</a>", "研究笔记 · <a href=\"https://github.com/patch-gg/pixelfx\">patch-gg/pixelfx</a>"], "Pixel VFX Anatomy": ["ピクセルVFX <span>解剖図</span>", "像素特效<span>解剖</span>", "像素特效<span>解剖</span>"], "A generator for code-drawn pixel effects, built from a study of how PixelFX draws its art. Every seed produces a different effect, either a one-shot like a strike or a seamless loop like an aura or portal. Its shape, material, timing and palette all come from that one number. No image files. Each frame is computed at 160 × 96 and scaled up without smoothing.": ["コードで描くピクセルエフェクトのジェネレーターです。PixelFXの描き方を研究して作りました。シードごとに違うエフェクトが生まれます。ストライクのような単発のものも、オーラやポータルのような継ぎ目のないループも。形、素材、タイミング、パレットはすべてその1つの数値から決まります。画像ファイルは使いません。各フレームは160 × 96で計算し、スムージングなしで拡大表示します。", "用程式碼繪製像素特效的生成器，源自對 PixelFX 繪製方式的研究。每個種子都會產生不同的特效：可能是像落擊這樣的單次特效，也可能是像靈氣或傳送門這樣無縫循環的特效。形狀、材質、節奏和調色盤都來自這一個數字。不使用任何圖片檔。每一格都以 160 × 96 計算，再不經平滑處理放大顯示。", "用代码绘制像素特效的生成器，源自对 PixelFX 绘制方式的研究。每个种子都会产生不同的特效：可能是像落击这样的单次特效，也可能是像灵气或传送门这样无缝循环的特效。形状、材质、节奏和调色板都来自这一个数字。不使用任何图片文件。每一帧都以 160 × 96 计算，再不经平滑处理放大显示。"], "seed": ["シード", "種子", "种子"], "Load": ["ロード", "載入", "载入"], "Generate": ["生成", "生成", "生成"], "Variation": ["バリエーション", "變化", "变化"], "Edit": ["編集", "編輯", "编辑"], "Previous": ["前へ", "上一個", "上一个"], "Any": ["すべて", "全部", "全部"], "One-shots": ["単発", "單次", "单次"], "Loops": ["ループ", "循環", "循环"], "UI": ["UI", "UI", "UI"], "Transitions": ["トランジション", "轉場", "转场"], "Critters": ["クリーチャー", "小生物", "小生物"], "When generating": ["生成するとき", "生成時", "生成时"], "Keep this palette": ["このパレットを保持", "保留這組調色盤", "保留这组调色板"], "Keep this shape and timing": ["この形とタイミングを保持", "保留這個形狀與節奏", "保留这个形状和节奏"], "New effect after each play": ["再生ごとに新しいエフェクト", "每次播放後換新特效", "每次播放后换新特效"], "View buffer": ["表示バッファ", "檢視緩衝區", "查看缓冲区"], "Final": ["最終", "最終", "最终"], "Color only": ["カラーのみ", "只看顏色", "只看颜色"], "Light only": ["ライトのみ", "只看光", "只看光"], "Partial alpha": ["半透明", "半透明", "半透明"], "Bayer dither": ["Bayerディザ", "Bayer 抖色", "Bayer 抖动"], "Smooth blend": ["なめらかに合成", "平滑混合", "平滑混合"], "Hit-stop": ["ヒットストップ", "打擊停頓", "打击停顿"], "On": ["オン", "開", "开"], "Off": ["オフ", "關", "关"], "Speed": ["速度", "速度", "速度"], "Look": ["ルック", "風格", "风格"], "Pixel": ["ピクセル", "像素", "像素"], "Cel outline": ["セル輪郭", "賽璐珞描邊", "赛璐珞描边"], "Handheld": ["携帯機", "掌機", "掌机"], "Edit this effect": ["このエフェクトを編集", "編輯這個特效", "编辑这个特效"], "edited": ["編集済み", "已編輯", "已编辑"], "shape, material, colours, size and timing": ["形、素材、色、大きさ、タイミング", "形狀、材質、顏色、大小與節奏", "形状、材质、颜色、大小和节奏"], "Shape": ["形", "形狀", "形状"], "Material": ["素材", "材質", "材质"], "Hue": ["色相", "色相", "色相"], "Saturation": ["彩度", "飽和度", "饱和度"], "Palette, dark to bright": ["パレット(暗い色から明るい色へ)", "調色盤（由暗到亮）", "调色板（由暗到亮）"], "Reset to the seed": ["シードの状態に戻す", "恢復成種子原樣", "恢复成种子原样"], "Edits ride along in the link, the recipe and the exports.": ["編集内容はリンク、レシピ、書き出しに含まれます。", "編輯內容會一併保存在連結、配方與匯出檔中。", "编辑内容会一并保存在链接、配方和导出文件中。"], "Export frame rate": ["書き出しフレームレート", "匯出影格率", "导出帧率"], "Export scale": ["書き出し倍率", "匯出倍率", "导出倍率"], "Sheet background": ["シートの背景", "精靈圖背景", "精灵图背景"], "Transparent": ["透明", "透明", "透明"], "Backdrop": ["背景あり", "有背景", "有背景"], "Sprite sheet PNG": ["スプライトシートPNG", "精靈圖 PNG", "精灵图 PNG"], "Sheet JSON": ["シートJSON", "精靈圖 JSON", "精灵图 JSON"], "Exports use the Partial alpha and Hit-stop settings above. A loop exports one period and repeats with no seam. A one-shot runs to its empty last frame, with one frame on contact. The GIF looks like the page. The sheet leaves out the screen shake so a game camera can do it, and its JSON gives the shake, the frame times and the recipe.": ["書き出しは上の「半透明」と「ヒットストップ」の設定に従います。ループは1周期分を書き出し、継ぎ目なく繰り返せます。単発エフェクトは空の最終フレームまで書き出し、接触の瞬間には必ず1フレームが入ります。GIFはページの見た目そのままです。シートには画面の揺れを入れないので、ゲームのカメラで揺らせます。揺れ、フレームの時間、レシピはJSONに入っています。", "匯出會沿用上方的「半透明」與「打擊停頓」設定。循環特效匯出一個週期，可以無縫重播。單次特效會一路匯出到空白的最後一格，接觸瞬間一定有一格。GIF 和頁面看起來一樣。精靈圖不含畫面震動，留給遊戲鏡頭處理；震動、每格時間和配方都寫在 JSON 裡。", "导出会沿用上方的“半透明”和“打击停顿”设置。循环特效导出一个周期，可以无缝重播。单次特效会一直导出到空白的最后一帧，接触瞬间一定有一帧。GIF 和页面看起来一样。精灵图不含画面震动，留给游戏镜头处理；震动、每帧时间和配方都写在 JSON 里。"], "Recipe for this seed": ["このシードのレシピ", "這個種子的配方", "这个种子的配方"], "Copy recipe": ["レシピをコピー", "複製配方", "复制配方"], "More from the generator": ["ほかのエフェクト", "更多生成結果", "更多生成结果"], "Six more": ["あと6つ", "再來六個", "再来六个"], "Select one to open it above. The link on this page ends in #s plus the seed, and any edits after a ~, so a copied link reopens the same effect.": ["クリックすると上で開きます。このページのリンクは <code>#s</code> とシードで終わり、編集内容は <code>~</code> の後に続くので、コピーしたリンクで同じエフェクトが開きます。", "點選即可在上方開啟。本頁連結的結尾是 <code>#s</code> 加上種子，編輯內容接在 <code>~</code> 之後，所以複製的連結會開啟同一個特效。", "点击即可在上方打开。本页链接的结尾是 <code>#s</code> 加上种子，编辑内容接在 <code>~</code> 之后，所以复制的链接会打开同一个特效。"], "How a seed becomes an effect": ["シードがエフェクトになるまで", "種子如何變成特效", "种子如何变成特效"], "One seed, one recipe": ["1つのシード、1つのレシピ", "一個種子，一份配方", "一个种子，一份配方"], "A seed starts a seeded random sequence. The draws pick a shape and a material (flame, frost, storm, dust, void, poison, holy, water), then set about 25 numbers for that shape. There are twenty-five one-shot shapes (strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw, meteor, quake, dash, starburst, warp, and the UI pops pickup, level up and hit number, and the screen transitions wipe, iris and dissolve) and twenty-two loops (aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath, ladder, core, pool, scan, cascade, and the critters bats, slime, ghost and moths), so 47 shapes × 8 materials makes 376 types, each with its own range of variations. A second sequence from the same seed runs the particles, so the same seed always plays the same frames.": ["シードは乱数列の出発点です。その乱数で<strong>形</strong>と<strong>素材</strong>(炎、氷、雷、土、虚無、毒、聖、水)を選び、その形に必要な約25個の数値を決めます。単発の形は25種類(ストライク、スラム、ノヴァ、イラプション、シャター、スラッシュ、ビーム、ピラー、爆縮、スパイク、花火、大波、チェイン、クロー、メテオ、地震、ダッシュ、スターバースト、ワープ、UIのアイテム取得、レベルアップ、ダメージ表示、画面トランジションのワイプ、アイリス、ディゾルブ)、ループは22種類(オーラ、ポータル、ヴォルテックス、シジル、かがり火、オーブ、結界、ミサイル、噴水、雲、ビーコン、光の群れ、ブレス、ラダー、コア、水面、スキャン、滝、クリーチャーのコウモリ、スライム、ゴースト、蛾)。47の形 × 8つの素材で<strong>376タイプ</strong>になり、それぞれに幅広いバリエーションがあります。同じシードから生まれる2本目の乱数列がパーティクルを動かすので、同じシードは必ず同じフレームを再生します。", "種子是一串亂數的起點。抽出的數值會選出一種<strong>形狀</strong>和一種<strong>材質</strong>（火焰、冰霜、雷暴、塵土、虛空、毒、神聖、水），再為這個形狀設定約 25 個數值。單次形狀有二十五種（落擊、重擊、新星、噴發、碎裂、斬擊、光束、光柱、內爆、尖刺、煙火、浪潮、連鎖、爪擊、隕石、地震、衝刺、星爆、傳送，UI 效果拾取、升級、傷害數字，以及畫面轉場擦除、光圈、溶解），循環有二十二種（靈氣、傳送門、漩渦、法印、火盆、寶珠、結界、飛彈、噴泉、雲、信標、光群、吐息、電弧梯、核心、水池、掃描、瀑布，以及小生物蝙蝠、史萊姆、幽靈、飛蛾），47 種形狀 × 8 種材質共 <strong>376 種類型</strong>，每種都有自己的變化範圍。同一個種子產生的第二串亂數負責驅動粒子，所以同一個種子永遠播放同樣的畫格。", "种子是一串随机数的起点。抽出的数值会选出一种<strong>形状</strong>和一种<strong>材质</strong>（火焰、冰霜、雷暴、尘土、虚空、毒、神圣、水），再为这个形状设定约 25 个数值。单次形状有二十五种（落击、重击、新星、喷发、碎裂、斩击、光束、光柱、内爆、尖刺、烟花、浪潮、连锁、爪击、陨石、地震、冲刺、星爆、传送，UI 效果拾取、升级、伤害数字，以及画面转场擦除、光圈、溶解），循环有二十二种（灵气、传送门、漩涡、法印、火盆、宝珠、结界、飞弹、喷泉、云、信标、光群、吐息、电弧梯、核心、水池、扫描、瀑布，以及小生物蝙蝠、史莱姆、幽灵、飞蛾），47 种形状 × 8 种材质共 <strong>376 种类型</strong>，每种都有自己的变化范围。同一个种子产生的第二串随机数负责驱动粒子，所以同一个种子永远播放同样的帧。"], "Seeds come in generations, so adding shapes never changes an old link. Seeds up to 2,147,483,647 are the first generation: nine shapes and five materials. Up to 4,294,967,295 is the second: sixteen shapes and eight materials. Up to 8,589,934,591 is the third: 27 shapes. Up to 12,884,901,887 is the fourth: 37 shapes. Up to 17,179,869,183 is the fifth, which draws from all 47. Each plays exactly as it always has. Generate picks from the newest.": ["シードは世代に分かれているので、形を増やしても古いリンクは変わりません。2,147,483,647までが第1世代で、9つの形と5つの素材。4,294,967,295までが第2世代で、16の形と8つの素材。8,589,934,591までが第3世代で27の形。12,884,901,887までが第4世代で37の形。17,179,869,183までの第5世代は47の形すべてから選びます。どのシードもずっと同じように再生されます。「生成」は最新の世代から選びます。", "種子分成好幾代，所以新增形狀永遠不會改變舊連結。2,147,483,647 以內是第一代：九種形狀、五種材質。4,294,967,295 以內是第二代：十六種形狀、八種材質。8,589,934,591 以內是第三代：27 種形狀。12,884,901,887 以內是第四代：37 種形狀。17,179,869,183 以內的第五代會從全部 47 種形狀中挑選。每個種子都和以前播放得一模一樣。「生成」會從最新一代挑選。", "种子分成好几代，所以新增形状永远不会改变旧链接。2,147,483,647 以内是第一代：九种形状、五种材质。4,294,967,295 以内是第二代：十六种形状、八种材质。8,589,934,591 以内是第三代：27 种形状。12,884,901,887 以内是第四代：37 种形状。17,179,869,183 以内的第五代会从全部 47 种形状中挑选。每个种子都和以前播放得一模一样。“生成”会从最新一代挑选。"], "Seamless loopsTry: Generate → Loops": ["継ぎ目のないループ<span class=\"try\">試す:生成 → ループ</span>", "無縫循環<span class=\"try\">試試：生成 → 循環</span>", "无缝循环<span class=\"try\">试试：生成 → 循环</span>"], "One-shots simulate particles step by step. Loops work the other way: every frame is computed from the time alone, wrapped at the period. Each moving part runs a whole number of cycles per period (a mote orbits once or twice, a flame tongue rises and is reborn), so the last frame flows into the first with no seam. Depth still matters: orbiting motes pass behind the figure on the far side of their orbit, and floor rings draw their far half first.": ["単発エフェクトはパーティクルを1ステップずつシミュレーションします。ループは逆で、各フレームを時間だけから計算し、周期で折り返します。動く部分はすべて1周期にちょうど整数回のサイクルを回す(光の粒が1〜2周する、炎の舌が昇っては生まれ直す)ので、最後のフレームが継ぎ目なく最初につながります。奥行きも大事で、周回する光の粒は軌道の奥側では人物の後ろを通り、床のリングは奥側の半分を先に描きます。", "單次特效逐步模擬粒子。循環特效則反過來：每一格只由時間計算，並在週期處折返。每個會動的部分在一個週期內都跑完整數圈（光點繞一兩圈、火舌升起後重生），所以最後一格會無縫接回第一格。深度依然重要：環繞的光點在軌道遠側會經過人物後方，地面光環也會先畫遠側那一半。", "单次特效逐步模拟粒子。循环特效则反过来：每一帧只由时间计算，并在周期处折返。每个会动的部分在一个周期内都跑完整数圈（光点绕一两圈、火舌升起后重生），所以最后一帧会无缝接回第一帧。深度依然重要：环绕的光点在轨道远侧会经过人物后方，地面光环也会先画远侧那一半。"], "Aura: a hooded figure with an ink outline, two bands of rim light that ripple upward, flame tongues, orbiting motes and a floor ring.": ["<strong>オーラ</strong>:インクの輪郭を持つフードの人物、上へ波打つ2本のリムライト、炎の舌、周回する光の粒、床のリング。", "<strong>靈氣</strong>：有墨線輪廓的兜帽人物、兩道向上起伏的輪廓光、火舌、環繞的光點和地面光環。", "<strong>灵气</strong>：有墨线轮廓的兜帽人物、两道向上起伏的轮廓光、火舌、环绕的光点和地面光环。"], "Portal: a floating oval whose interior is a per-pixel swirl picked from the ramp in steps, with a rim highlight that chases around it and motes spiralling in.": ["<strong>ポータル</strong>:浮かぶ楕円。内側はランプから段階的に色を選んだピクセル単位の渦で、縁をハイライトが追いかけ、光の粒が渦を巻いて吸い込まれます。", "<strong>傳送門</strong>：漂浮的橢圓，內部是逐像素、按階從色階挑色的漩渦，邊緣有追逐的高光，光點螺旋吸入。", "<strong>传送门</strong>：漂浮的椭圆，内部是逐像素、按阶从色阶挑色的漩涡，边缘有追逐的高光，光点螺旋吸入。"], "Vortex: dashed rings that rise, widen and spin, with material wisps climbing the funnel.": ["<strong>ヴォルテックス</strong>:昇りながら広がって回る破線のリングと、漏斗を昇る素材の筋。", "<strong>漩渦</strong>：上升、擴大並旋轉的虛線環，材質的輕煙沿著漏斗攀升。", "<strong>漩涡</strong>：上升、扩大并旋转的虚线环，材质的轻烟沿着漏斗攀升。"], "Sigil: a flat rune circle with turning glyphs, a star, rising motes and a hovering orb.": ["<strong>シジル</strong>:回る文字と星を持つ平らなルーンの円、昇る光の粒、浮かぶオーブ。", "<strong>法印</strong>：平放的符文圓陣，有轉動的文字和星形，上升的光點與懸浮的寶珠。", "<strong>法印</strong>：平放的符文圆阵，有转动的文字和星形，上升的光点与悬浮的宝珠。"], "Brazier: an iron bowl on three legs with flickering coals and a swaying flame body, its material pouring off the top.": ["<strong>かがり火</strong>:3本脚の鉄の鉢。炭がちらつき、炎が揺れ、上から素材があふれ出します。", "<strong>火盆</strong>：三腳鐵盆，炭火閃爍、火焰搖曳，頂端湧出材質。", "<strong>火盆</strong>：三脚铁盆，炭火闪烁、火焰摇曳，顶端涌出材质。"], "Orb: a floating crystal that turns one facet per loop inside tilted rings, shedding its material.": ["<strong>オーブ</strong>:傾いたリングの中で1ループに1面ずつ回る浮遊クリスタル。素材がこぼれ落ちます。", "<strong>寶珠</strong>：在傾斜光環中漂浮的水晶，每個循環轉動一個切面，並散落材質。", "<strong>宝珠</strong>：在倾斜光环中漂浮的水晶，每个循环转动一个切面，并散落材质。"], "Ward: a glass dome of plates over a figure, a band of light climbing it, and shots from one side that glance off in ripples and sparks.": ["<strong>結界</strong>:人物を覆う板状のガラスのドーム。光の帯が昇り、片側から飛んでくる弾が波紋と火花を残してはじかれます。", "<strong>結界</strong>：罩住人物、由面板組成的玻璃圓頂，光帶往上爬，從一側射來的子彈在漣漪與火花中被彈開。", "<strong>结界</strong>：罩住人物、由面板组成的玻璃圆顶，光带往上爬，从一侧射来的子弹在涟漪与火花中被弹开。"], "Missile: a ball or a faceted lance in flight, held in place while its trail, sparks and speed lines stream past.": ["<strong>ミサイル</strong>:飛行中の球か多面体の槍。その場にとどまり、軌跡、火花、スピード線が後ろへ流れます。", "<strong>飛彈</strong>：飛行中的球體或多面長槍，固定在原地，尾跡、火花和速度線向後流過。", "<strong>飞弹</strong>：飞行中的球体或多面长枪，固定在原地，尾迹、火花和速度线向后流过。"], "Fountain: a stone basin and a rippling jet that breaks into arcs of the material, each landing with a ring.": ["<strong>噴水</strong>:石の水盤と波打つ噴流。素材の弧に分かれて落ち、着地ごとに輪が広がります。", "<strong>噴泉</strong>：石砌水盆與起伏的水柱，散成一道道材質的弧線，每次落下都泛起一圈。", "<strong>喷泉</strong>：石砌水盆与起伏的水柱，散成一道道材质的弧线，每次落下都泛起一圈。"], "Cloud: blobs that swell and shrink, lit from above, raining the material; a storm cloud flashes and strikes the floor.": ["<strong>雲</strong>:膨らんでは縮むかたまり。上から照らされ、素材を降らせます。雷雲は光り、床に落雷します。", "<strong>雲</strong>：一團團脹縮的雲塊，上方受光，落下材質；雷雲會閃光並劈向地面。", "<strong>云</strong>：一团团胀缩的云块，上方受光，落下材质；雷云会闪光并劈向地面。"], "Beacon: a steel pad with ripples, a soft column of light, and rings of light lifting off it.": ["<strong>ビーコン</strong>:波紋の広がる鋼の台座、やわらかな光の柱、そこから浮かび上がる光の輪。", "<strong>信標</strong>：泛起漣漪的鋼製平台、柔和的光柱，以及從上面升起的光環。", "<strong>信标</strong>：泛起涟漪的钢制平台、柔和的光柱，以及从上面升起的光环。"], "Swarm: bright motes on closed figure-of-eight paths, each trailing the material.": ["<strong>光の群れ</strong>:閉じた8の字の軌道を飛ぶ明るい光の粒。それぞれ素材の尾を引きます。", "<strong>光群</strong>：沿封閉 8 字軌道飛行的明亮光點，各自拖著材質的尾巴。", "<strong>光群</strong>：沿封闭 8 字轨道飞行的明亮光点，各自拖着材质的尾巴。"], "Breath: a stream of the material pouring from a spout in a widening cone, white-hot at the lips.": ["<strong>ブレス</strong>:注ぎ口から円錐状に広がって噴き出す素材。口元は白熱しています。", "<strong>吐息</strong>：從噴口呈錐形擴散噴出的材質，出口處白熱。", "<strong>吐息</strong>：从喷口呈锥形扩散喷出的材质，出口处白热。"], "Ladder: an arc that strikes at the narrow foot of two rods, climbs and bows as it stretches, and snaps at the top.": ["<strong>ラダー</strong>:2本の棒の狭い根元で放電し、伸びながら弓なりに昇り、てっぺんで切れるアーク。", "<strong>電弧梯</strong>：電弧在兩根桿子較窄的底部打出，邊伸長邊彎曲往上爬，到頂端斷開。", "<strong>电弧梯</strong>：电弧在两根杆子较窄的底部打出，边伸长边弯曲往上爬，到顶端断开。"], "Core: a plasma core beating inside a turning cage of bars, throwing a shock ring on every beat.": ["<strong>コア</strong>:回る格子の檻の中で脈打つプラズマのコア。鼓動のたびに衝撃波の輪を放ちます。", "<strong>核心</strong>：在旋轉柵籠中跳動的電漿核心，每次跳動都拋出一圈衝擊波。", "<strong>核心</strong>：在旋转栅笼中跳动的等离子核心，每次跳动都抛出一圈冲击波。"], "Pool: drops of the material fall into a pool on the floor at their own moments, and rings spread across it.": ["<strong>水面</strong>:素材のしずくがそれぞれのタイミングで床の水たまりに落ち、輪が広がります。", "<strong>水池</strong>：材質的水滴各自在不同時刻落入地上的水池，漣漪隨之擴散。", "<strong>水池</strong>：材质的水滴各自在不同时刻落入地上的水池，涟漪随之扩散。"], "Scan: brackets lock onto the figure and a line sweeps head to toe, leaving an outline that cools.": ["<strong>スキャン</strong>:ブラケットが人物を捉え、ラインが頭からつま先まで走り、冷めていく輪郭を残します。", "<strong>掃描</strong>：括框鎖定人物，一條線從頭掃到腳，留下逐漸冷卻的輪廓。", "<strong>扫描</strong>：括框锁定人物，一条线从头扫到脚，留下逐渐冷却的轮廓。"], "Cascade: the material pours over a rock lip in sliding strands and crashes into foam and mist.": ["<strong>滝</strong>:素材が岩の縁から筋になって流れ落ち、泡と霧になって砕けます。", "<strong>瀑布</strong>：材質從岩石邊緣成股滑落，摔成泡沫與水霧。", "<strong>瀑布</strong>：材质从岩石边缘成股滑落，摔成泡沫与水雾。"], "Critters: bats on looping flight paths with glowing eyes; slimes that crouch, leap, splat and blink; sheet ghosts with waving hems that bob and fade; moths circling a lamp, passing behind it.": ["<strong>クリーチャー</strong>:目を光らせてループ軌道を飛ぶコウモリ。身をかがめて跳び、着地でつぶれてまばたきするスライム。裾をなびかせて揺れ、ふっと薄れるシーツのゴースト。ランプのまわりを回り、その後ろを通る蛾。", "<strong>小生物</strong>：眼睛發光、沿循環路線飛行的蝙蝠；蹲下、跳起、落地壓扁還會眨眼的史萊姆；下襬飄動、上下浮動又淡出的床單幽靈；繞著燈飛、會從燈後經過的飛蛾。", "<strong>小生物</strong>：眼睛发光、沿循环路线飞行的蝙蝠；蹲下、跳起、落地压扁还会眨眼的史莱姆；下摆飘动、上下浮动又淡出的床单幽灵；绕着灯飞、会从灯后经过的飞蛾。"], "Generated palettesTry: Keep this palette": ["生成されるパレット<span class=\"try\">試す:このパレットを保持</span>", "自動生成的調色盤<span class=\"try\">試試：保留這組調色盤</span>", "自动生成的调色板<span class=\"try\">试试：保留这组调色板</span>"], "Each recipe builds its own eight-step ramp from a random base hue. Lightness climbs from near black to near white. Saturation peaks in the middle and drops at the top so highlights read as white-hot. The hue drifts as it climbs, with highlights leaning toward yellow and shadows leaning the other way. That drift is what keeps a generated ramp from looking like a plain gradient.": ["レシピはそれぞれ、ランダムな基本色相から8段階のランプを作ります。明度は黒に近い色から白に近い色へ上がります。彩度は中ほどで最大になり、上端で下がるので、ハイライトが白熱して見えます。色相は明るくなるにつれてずれ、ハイライトは黄色寄り、影は反対側へ寄ります。このずれのおかげで、生成したランプがただのグラデーションに見えません。", "每份配方都會從隨機的基礎色相建立一條八階色階。亮度從接近黑一路升到接近白。飽和度在中段最高、到頂端下降，讓高光看起來白熱。色相會隨著變亮而偏移，高光偏向黃色，陰影偏向另一側。正是這種偏移，讓生成的色階不像單純的漸層。", "每份配方都会从随机的基础色相建立一条八阶色阶。亮度从接近黑一路升到接近白。饱和度在中段最高、到顶端下降，让高光看起来白热。色相会随着变亮而偏移，高光偏向黄色，阴影偏向另一侧。正是这种偏移，让生成的色阶不像单纯的渐变。"], "Guard rails": ["ガードレール", "護欄", "护栏"], "Random numbers alone make noise, so every recipe keeps the parts the study showed matter: an anticipation phase, a white hero frame on contact, a burst of light that falls off, a spread of particles, and a long decay that ends with an empty frame. Ranges are clamped so nothing leaves the canvas or overwhelms the focal point. Some seeds are still plainer than others.": ["乱数だけではただのノイズになるので、どのレシピも研究で大事だとわかった要素を残しています。予備動作、接触時の白いヒーローフレーム、減衰する光のバースト、パーティクルの広がり、空のフレームで終わる長い余韻です。数値の範囲は制限してあるので、キャンバスからはみ出したり焦点を覆い隠したりしません。それでも地味なシードはあります。", "光靠亂數只會變成雜訊，所以每份配方都保留研究中證實重要的部分：預備動作、接觸時的白色英雄格、逐漸衰減的爆光、粒子的擴散，以及以空白格結束的長尾韻。數值範圍都有上下限，不會跑出畫布或蓋過焦點。不過還是有些種子比較平淡。", "光靠随机数只会变成噪点，所以每份配方都保留研究中证实重要的部分：预备动作、接触时的白色英雄帧、逐渐衰减的爆光、粒子的扩散，以及以空白帧结束的长尾韵。数值范围都有上下限，不会跑出画布或盖过焦点。不过还是有些种子比较平淡。"], "Compared with PixelFX": ["PixelFXとの比較", "與 PixelFX 比較", "与 PixelFX 比较"], "The generator trades curation for range. PixelFX is a library of finished effects that someone looked at and refined. This page makes new effects without limit, at a lower and less even level of polish.": ["このジェネレーターは、厳選の代わりに幅を取りました。PixelFXは、誰かが目で確かめて磨き上げた完成品のエフェクトのライブラリです。このページは新しいエフェクトを際限なく作りますが、仕上がりは低めで、ばらつきもあります。", "這個生成器用精挑細選換來了廣度。PixelFX 是一套完成度高的特效庫，每個都有人看過並調整過。本頁可以無限產生新特效，但精緻度較低，也比較參差。", "这个生成器用精挑细选换来了广度。PixelFX 是一套完成度高的特效库，每个都有人看过并调整过。本页可以无限生成新特效，但精致度较低，也比较参差。"], "This generator": ["このジェネレーター", "這個生成器", "这个生成器"], "Where effects come from": ["エフェクトの出どころ", "特效從哪裡來", "特效从哪里来"], "244 hand-written files, each tuned over several render-and-fix rounds": ["手書きの244ファイル。それぞれ描画と修正を何度も繰り返して調整", "244 個手寫檔案，每個都經過多輪渲染與修正", "244 个手写文件，每个都经过多轮渲染与修正"], "One engine and a recipe drawn from a seed. Any of about 17.2 billion seeds gives a different effect": ["1つのエンジンと、シードから引いたレシピ。約172億のシードのどれもが違うエフェクトになる", "一個引擎加上從種子抽出的配方。約 172 億個種子，每個都產生不同特效", "一个引擎加上从种子抽出的配方。约 172 亿个种子，每个都生成不同特效"], "Range of kinds": ["種類の幅", "種類範圍", "种类范围"], "21 categories, including loops, UI, transitions, weather and critters": ["21カテゴリ。ループ、UI、トランジション、天候、クリーチャーを含む", "21 個類別，包含循環、UI、轉場、天氣和小生物", "21 个类别，包含循环、UI、转场、天气和小生物"], "376 types: 25 one-shot shapes (UI pops and screen transitions among them) and 22 loops (critters among them), each in 8 materials, with the numbers varied inside each": ["376タイプ:単発の形25種(UIと画面トランジションを含む)とループ22種(クリーチャーを含む)。それぞれ8つの素材があり、タイプの中でも数値が変わる", "376 種類型：25 種單次形狀（含 UI 效果與畫面轉場）和 22 種循環（含小生物），各有 8 種材質，每種內部的數值都會變化", "376 种类型：25 种单次形状（含 UI 效果与画面转场）和 22 种循环（含小生物），各有 8 种材质，每种内部的数值都会变化"], "Palettes": ["パレット", "調色盤", "调色板"], "A curated ramp per effect, which callers can swap": ["エフェクトごとに厳選したランプ。呼び出し側で差し替え可能", "每個特效一條精選色階，呼叫端可以替換", "每个特效一条精选色阶，调用方可以替换"], "A new hue-shifted ramp per seed, which can be locked while the shape changes": ["シードごとに色相がずれる新しいランプ。形を変えてもパレットだけ固定できる", "每個種子一條新的色相偏移色階，可以在換形狀時鎖定不變", "每个种子一条新的色相偏移色阶，可以在换形状时锁定不变"], "Characters": ["キャラクター", "角色", "角色"], "A 3D-skeleton fighter with wind-ups, hit reactions and a target dummy": ["予備動作、被弾リアクション、標的人形を備えた3Dスケルトンのファイター", "具備預備動作、受擊反應和標靶假人的 3D 骨架戰士", "具备预备动作、受击反应和标靶假人的 3D 骨架战士"], "None": ["なし", "無", "无"], "Quality": ["品質", "品質", "质量"], "Each effect held to a written quality bar and benchmarked against references": ["エフェクトごとに文書化された品質基準を守り、参考作品と比較", "每個特效都符合書面品質標準，並與參考作品比對", "每个特效都符合书面质量标准，并与参考作品比对"], "Uneven. Guard rails keep results readable, but nobody has reviewed a given seed": ["ばらつきあり。ガードレールで読みやすさは保つが、個々のシードは誰も確認していない", "參差不齊。護欄讓結果保持清楚，但沒有人逐一檢查過每個種子", "参差不齐。护栏让结果保持清楚，但没有人逐一检查过每个种子"], "Using the output": ["出力の使い方", "輸出的用法", "输出的用法"], "Import into a browser game, or export PNG sprite sheets with Aseprite JSON, GIF or MP4": ["ブラウザゲームに組み込むか、Aseprite JSON付きのPNGスプライトシート、GIF、MP4で書き出し", "匯入瀏覽器遊戲，或匯出附 Aseprite JSON 的 PNG 精靈圖、GIF 或 MP4", "导入浏览器游戏，或导出附 Aseprite JSON 的 PNG 精灵图、GIF 或 MP4"], "Export a PNG sprite sheet with Aseprite-style JSON, or a GIF. Share by seed link or copy the recipe": ["Aseprite形式のJSON付きPNGスプライトシート、またはGIFで書き出し。シードのリンクで共有するか、レシピをコピー", "匯出附 Aseprite 格式 JSON 的 PNG 精靈圖，或 GIF。用種子連結分享，或複製配方", "导出附 Aseprite 格式 JSON 的 PNG 精灵图，或 GIF。用种子链接分享，或复制配方"], "Learning": ["学び", "學習", "学习"], "Docs, a checker and a written workflow for making new effects": ["ドキュメント、チェッカー、新しいエフェクトを作るための手順書", "文件、檢查工具，以及製作新特效的書面流程", "文档、检查工具，以及制作新特效的书面流程"], "Toggles that switch off the light buffer, the dither and the hit-stop so you can see what each does": ["ライトバッファ、ディザ、ヒットストップをオフにして、それぞれの役割を確かめられるトグル", "可以關掉光緩衝區、抖色和打擊停頓的開關，看看各自的作用", "可以关掉光缓冲区、抖动和打击停顿的开关，看看各自的作用"], "What this version adds over the first version of this page, which had one fixed strike:": ["<strong>このバージョンで加わったもの</strong>(固定のストライク1つだけだった最初のバージョンと比べて):", "<strong>這個版本新增的內容</strong>（相較於只有一個固定落擊的第一版）：", "<strong>这个版本新增的内容</strong>（相较于只有一个固定落击的第一版）："], "Unlimited effects from seeds, with a name, a shareable link and a copyable recipe for each.": ["シードから無限にエフェクトを生成。それぞれに名前、共有できるリンク、コピーできるレシピ。", "由種子產生無限特效，每個都有名稱、可分享的連結與可複製的配方。", "由种子生成无限特效，每个都有名称、可分享的链接与可复制的配方。"], "Four new one-shot shapes (slam, nova, eruption, shatter) and five materials, adding vapour, dust, void puffs, lightning forks, ice shards and falling flakes.": ["新しい単発の形4種(スラム、ノヴァ、イラプション、シャター)と5つの素材。湯気、土ぼこり、虚無の煙、枝分かれする稲妻、氷の破片、舞い落ちる結晶が加わりました。", "四種新的單次形狀（重擊、新星、噴發、碎裂）與五種材質，增加了蒸氣、塵土、虛空煙團、閃電分岔、冰碎片和飄落的雪花。", "四种新的单次形状（重击、新星、喷发、碎裂）与五种材质，增加了蒸汽、尘土、虚空烟团、闪电分岔、冰碎片和飘落的雪花。"], "Four seamless loops: aura, portal, vortex and sigil.": ["継ぎ目のないループ4種:オーラ、ポータル、ヴォルテックス、シジル。", "四種無縫循環：靈氣、傳送門、漩渦和法印。", "四种无缝循环：灵气、传送门、漩涡和法印。"], "Generated palettes instead of four fixed ones.": ["固定の4パレットに代わる生成パレット。", "用自動生成的調色盤取代四組固定調色盤。", "用自动生成的调色板取代四组固定调色板。"], "Locks and a Variation button, so you can keep what you like and change the rest.": ["保持オプションと「バリエーション」ボタン。気に入った部分を残して残りを変えられます。", "鎖定選項和「變化」按鈕，保留喜歡的部分、改變其餘。", "锁定选项和“变化”按钮，保留喜欢的部分、改变其余。"], "Six live variations at once, and an option to play a new effect after each one.": ["6つのバリエーションを同時再生。再生ごとに新しいエフェクトにするオプション。", "同時播放六個變化，以及每次播放後自動換新特效的選項。", "同时播放六个变化，以及每次播放后自动换新特效的选项。"], "Export as a sprite sheet with frame data, or as a GIF.": ["フレームデータ付きのスプライトシート、またはGIFで書き出し。", "匯出附影格資料的精靈圖，或 GIF。", "导出附帧数据的精灵图，或 GIF。"], "A second generation of seeds with three more one-shots (slash, beam, pillar), four more loops (brazier, orb, ward, missile) and three more materials: poison bubbles that swell and pop, holy glints, and water drops that splash on the floor.": ["シードの第2世代。単発の形3種(スラッシュ、ビーム、ピラー)、ループ4種(かがり火、オーブ、結界、ミサイル)、素材3種(膨らんではじける毒の泡、聖なるきらめき、床で跳ねる水しぶき)。", "第二代種子：三種單次形狀（斬擊、光束、光柱）、四種循環（火盆、寶珠、結界、飛彈）和三種材質：會膨脹破裂的毒泡、神聖的閃光，以及濺落地面的水滴。", "第二代种子：三种单次形状（斩击、光束、光柱）、四种循环（火盆、宝珠、结界、飞弹）和三种材质：会膨胀破裂的毒泡、神圣的闪光，以及溅落地面的水滴。"], "A third generation with six more one-shots (implosion, spikes, firework, wave, chain, claw) and five more loops (fountain, cloud, beacon, swarm, breath).": ["第3世代。単発の形6種(爆縮、スパイク、花火、大波、チェイン、クロー)とループ5種(噴水、雲、ビーコン、光の群れ、ブレス)。", "第三代：六種單次形狀（內爆、尖刺、煙火、浪潮、連鎖、爪擊）與五種循環（噴泉、雲、信標、光群、吐息）。", "第三代：六种单次形状（内爆、尖刺、烟花、浪潮、连锁、爪击）与五种循环（喷泉、云、信标、光群、吐息）。"], "A fourth generation with five more one-shots (meteor, quake, dash, starburst, warp) and five more loops (ladder, core, pool, scan, cascade).": ["第4世代。単発の形5種(メテオ、地震、ダッシュ、スターバースト、ワープ)とループ5種(ラダー、コア、水面、スキャン、滝)。", "第四代：五種單次形狀（隕石、地震、衝刺、星爆、傳送）與五種循環（電弧梯、核心、水池、掃描、瀑布）。", "第四代：五种单次形状（陨石、地震、冲刺、星爆、传送）与五种循环（电弧梯、核心、水池、扫描、瀑布）。"], "A fifth generation with UI pops (pickup, level up, hit number), screen transitions (wipe, iris, dissolve) and critters (bats, slime, ghost, moths).": ["第5世代。UI(アイテム取得、レベルアップ、ダメージ表示)、画面トランジション(ワイプ、アイリス、ディゾルブ)、クリーチャー(コウモリ、スライム、ゴースト、蛾)。", "第五代：UI 效果（拾取、升級、傷害數字）、畫面轉場（擦除、光圈、溶解）和小生物（蝙蝠、史萊姆、幽靈、飛蛾）。", "第五代：UI 效果（拾取、升级、伤害数字）、画面转场（擦除、光圈、溶解）和小生物（蝙蝠、史莱姆、幽灵、飞蛾）。"], "An editor for shape, material (or none), palette and timing, kept in the link.": ["形、素材(なしも可)、パレット、タイミングのエディター。編集内容はリンクに保存されます。", "可編輯形狀、材質（也可以不用）、調色盤與節奏的編輯器，內容保存在連結中。", "可编辑形状、材质（也可以不用）、调色板与节奏的编辑器，内容保存在链接中。"], "The drawing techniques underneath": ["描画のしくみ", "底層的繪製技巧", "底层的绘制技巧"], "Two buffersTry: View buffer": ["2つのバッファ<span class=\"try\">試す:表示バッファ</span>", "兩個緩衝區<span class=\"try\">試試：檢視緩衝區</span>", "两个缓冲区<span class=\"try\">试试：查看缓冲区</span>"], "Each frame has a color buffer of hard pixels and a light buffer of additive glow, added on top at the end. The color layer stays crisp. All the softness and heat comes from light. \"Color only\" looks flat. \"Light only\" shows how much of the picture is glow.": ["各フレームには、硬いピクセルの<code>color</code>バッファと、加算のグローの<code>light</code>バッファがあり、最後に上へ足し合わせます。カラー層はくっきりしたまま。やわらかさや熱はすべて光から生まれます。「カラーのみ」は平坦に見え、「ライトのみ」を見ると絵のどれだけがグローかわかります。", "每一格都有存放硬像素的 <code>color</code> 緩衝區，和存放疊加光暈的 <code>light</code> 緩衝區，最後疊在上面。顏色層保持銳利，所有柔和感與熱度都來自光。「只看顏色」看起來很平，「只看光」則顯示畫面有多少是光暈。", "每一帧都有存放硬像素的 <code>color</code> 缓冲区，和存放叠加光晕的 <code>light</code> 缓冲区，最后叠在上面。颜色层保持锐利，所有柔和感与热度都来自光。“只看颜色”看起来很平，“只看光”则显示画面有多少是光晕。"], "Dither, not alphaTry: Partial alpha": ["アルファではなくディザ<span class=\"try\">試す:半透明</span>", "用抖色，不用透明度<span class=\"try\">試試：半透明</span>", "用抖动，不用透明度<span class=\"try\">试试：半透明</span>"], "A half-transparent pixel is drawn or skipped by comparing its alpha to a 4 × 4 Bayer threshold for that screen position, so fades break into a clean pattern instead of muddy in-between colors. Smoke, vapour and dust are the exception: they are truly translucent soft discs.": ["半透明のピクセルは、そのアルファを画面位置ごとの4 × 4 Bayerしきい値と比べて、描くか描かないかを決めます。だからフェードは濁った中間色ではなく、きれいな模様に分かれます。煙、湯気、土ぼこりは例外で、本当に半透明のやわらかい円です。", "半透明的像素會把它的透明度和該畫面位置的 4 × 4 Bayer 門檻比較，決定畫或不畫，所以淡出會分解成乾淨的圖樣，而不是混濁的中間色。煙、蒸氣和塵土是例外：它們是真正半透明的柔和圓形。", "半透明的像素会把它的透明度和该画面位置的 4 × 4 Bayer 阈值比较，决定画或不画，所以淡出会分解成干净的图样，而不是浑浊的中间色。烟、蒸汽和尘土是例外：它们是真正半透明的柔和圆形。"], "alpha 0": ["アルファ 0", "透明度 0", "透明度 0"], "top: dithered · bottom: blended": ["上:ディザ · 下:合成", "上：抖色 · 下：混合", "上：抖动 · 下：混合"], "Lines and light, not fills": ["塗りではなく線と光", "線條與光，而不是填色", "线条与光，而不是填色"], "Shapes are 1 px rims, rings, streaks and sparks. Cores and leading edges are white-hot, middles are tinted, and the deepest color only shows in shadow.": ["形は1pxの縁、リング、筋、火花でできています。芯と先端は白熱、中ほどは色づき、いちばん深い色は影にだけ現れます。", "形狀由 1 像素的邊緣、光環、筆觸和火花組成。核心與前緣白熱，中段帶色，最深的顏色只出現在陰影裡。", "形状由 1 像素的边缘、光环、笔触和火花组成。核心与前缘白热，中段带色，最深的颜色只出现在阴影里。"], "Particles with physicsTry: ¼× speed": ["物理で動くパーティクル<span class=\"try\">試す:¼×速度</span>", "有物理的粒子<span class=\"try\">試試：¼× 速度</span>", "有物理的粒子<span class=\"try\">试试：¼× 速度</span>"], "Sparks are two-tone lines that stretch with speed, fall and bounce. Flames rise, cool down the ramp and turn to smoke. Shards spin, bounce and settle. Lights flare on contact and fall off with life². The simulation steps at a fixed 120 Hz, so drag the scrubber back and the same frame returns.": ["火花は速さに応じて伸びる2色の線で、落ちて跳ねます。炎は昇りながらランプを下って冷え、煙になります。破片は回転し、跳ねて止まります。光は接触でぱっと灯り、寿命の2乗で減衰します。シミュレーションは120 Hz固定で進むので、スクラバーを戻すと同じフレームが戻ってきます。", "火花是隨速度拉長的雙色線條，會落下、反彈。火焰上升、沿色階冷卻後變成煙。碎片會旋轉、反彈、停住。光在接觸時亮起，隨壽命平方衰減。模擬以固定 120 Hz 推進，所以把時間軸拖回去，會看到同一格。", "火花是随速度拉长的双色线条，会落下、反弹。火焰上升、沿色阶冷却后变成烟。碎片会旋转、反弹、停住。光在接触时亮起，随寿命平方衰减。模拟以固定 120 Hz 推进，所以把时间轴拖回去，会看到同一帧。"], "Choreography and hit-stopTry: Hit-stop off": ["演出とヒットストップ<span class=\"try\">試す:ヒットストップ オフ</span>", "節奏編排與打擊停頓<span class=\"try\">試試：關閉打擊停頓</span>", "节奏编排与打击停顿<span class=\"try\">试试：关闭打击停顿</span>"], "Anticipation, a white hero frame, release, spread, hold and a long decay. On contact everything freezes for a few hundredths of a second while the screen shakes. Without the freeze, the same effect feels weightless.": ["予備動作、白いヒーローフレーム、放出、広がり、持続、長い余韻。接触の瞬間、すべてが数百分の1秒止まり、画面が揺れます。止まらないと、同じエフェクトでも重みが感じられません。", "預備動作、白色英雄格、釋放、擴散、持續，以及長長的尾韻。接觸瞬間一切凍結百分之幾秒，同時畫面震動。少了這一停，同樣的特效就顯得輕飄飄。", "预备动作、白色英雄帧、释放、扩散、持续，以及长长的尾韵。接触瞬间一切冻结百分之几秒，同时画面震动。少了这一停，同样的特效就显得轻飘飘。"], "Other looksTry: Look → Cel outline, Handheld": ["ほかのルック<span class=\"try\">試す:ルック → セル輪郭、携帯機</span>", "其他風格<span class=\"try\">試試：風格 → 賽璐珞描邊、掌機</span>", "其他风格<span class=\"try\">试试：风格 → 赛璐珞描边、掌机</span>"], "The same buffers can be finished another way. In the cel look, anything at least a third covered becomes a solid shape with a one-pixel ink outline, and glow is cut into three flat bands instead of falling off smoothly. Smoke and vapour become solid outlined puffs. The handheld look maps every pixel's brightness onto four shades of one green, dithering between them. Nothing about the effect changes, only how its last step is drawn.": ["同じバッファを別の方法で仕上げることもできます。セルのルックでは、3分の1以上覆われた部分が1pxのインク輪郭を持つ塗りつぶしの形になり、グローはなめらかに減衰する代わりに3段の平らな帯に分かれます。煙と湯気は輪郭付きの塗りつぶしの煙になります。携帯機のルックは各ピクセルの明るさを1色の緑の4段階に割り当て、その間をディザでつなぎます。エフェクトそのものは何も変わらず、最後の描き方だけが変わります。", "同樣的緩衝區也能用別的方式收尾。賽璐珞風格中，覆蓋三分之一以上的部分會變成帶 1 像素墨線輪廓的實心形狀，光暈不再平滑衰減，而是切成三層平坦色帶；煙和蒸氣變成有輪廓的實心煙團。掌機風格把每個像素的亮度對應到同一種綠色的四個深淺，中間用抖色銜接。特效本身完全不變，只有最後一步的畫法不同。", "同样的缓冲区也能用别的方式收尾。赛璐珞风格中，覆盖三分之一以上的部分会变成带 1 像素墨线轮廓的实心形状，光晕不再平滑衰减，而是切成三层平坦色带；烟和蒸汽变成有轮廓的实心烟团。掌机风格把每个像素的亮度对应到同一种绿色的四个深浅，中间用抖动衔接。特效本身完全不变，只有最后一步的画法不同。"], "Depth with flat tricks": ["平面の工夫で奥行きを出す", "用平面技巧做出深度", "用平面技巧做出深度"], "Floor rings are flattened ellipses: the far half draws behind and dimmer, the near half in front. Cracks and scorch sit a few pixels below the floor line as perspective.": ["床のリングはつぶした楕円で、奥側の半分は後ろに暗く、手前の半分は前に描きます。ひび割れや焦げ跡は、遠近感を出すため床の線より数ピクセル下に置きます。", "地面光環是壓扁的橢圓：遠側那一半畫在後方、比較暗，近側那一半畫在前方。裂痕與焦痕落在地平線下方幾個像素，營造透視。", "地面光环是压扁的椭圆：远侧那一半画在后方、比较暗，近侧那一半画在前方。裂痕与焦痕落在地平线下方几个像素，营造透视。"], "Sources": ["出典", "參考來源", "参考来源"], "patch-gg/pixelfx on GitHub (MIT)": ["GitHubのpatch-gg/pixelfx(MIT)", "GitHub 上的 patch-gg/pixelfx（MIT）", "GitHub 上的 patch-gg/pixelfx（MIT）"], "PixelFX gallery": ["PixelFXギャラリー", "PixelFX 圖庫", "PixelFX 图库"], "Sprite Fusion pixel art VFX, by Hugo Duprez (MIT)": ["Sprite Fusionのピクセルアート VFX、Hugo Duprez作(MIT)", "Sprite Fusion 像素藝術特效，Hugo Duprez 製作（MIT）", "Sprite Fusion 像素艺术特效，Hugo Duprez 制作（MIT）"], "The generator is new code written for this page from a reading of the PixelFX source and docs. It copies no effect from the library.": ["このジェネレーターは、PixelFXのソースとドキュメントを読んだうえで、このページのために新しく書いたコードです。ライブラリのエフェクトは1つもコピーしていません。", "這個生成器是讀過 PixelFX 的原始碼與文件後，為本頁全新撰寫的程式碼，沒有複製函式庫中的任何特效。", "这个生成器是读过 PixelFX 的源代码与文档后，为本页全新编写的代码，没有复制库中的任何特效。"]};
+  const DYN_TR = {"Play": ["再生", "播放", "播放"], "Pause": ["一時停止", "暫停", "暂停"], "Generating…": ["生成中…", "生成中…", "生成中…"], "Copied": ["コピーしました", "已複製", "已复制"], "Selected. Press Ctrl+C or ⌘C to copy.": ["選択しました。Ctrl+C か ⌘C でコピーしてください。", "已選取，請按 Ctrl+C 或 ⌘C 複製。", "已选中，请按 Ctrl+C 或 ⌘C 复制。"], "{0} frames · {1} s · sheet {2} × {3} px": ["{0}フレーム · {1}秒 · シート {2} × {3} px", "{0} 格 · {1} 秒 · 精靈圖 {2} × {3} px", "{0} 帧 · {1} 秒 · 精灵图 {2} × {3} px"], "Encoding the GIF…": ["GIFをエンコード中…", "正在編碼 GIF…", "正在编码 GIF…"], "Drawing the frames…": ["フレームを描画中…", "正在繪製影格…", "正在绘制帧…"], "Downloading {0} · {1} frames · {2} KB": ["{0} をダウンロード中 · {1}フレーム · {2} KB", "正在下載 {0} · {1} 格 · {2} KB", "正在下载 {0} · {1} 帧 · {2} KB"], " · colours reduced to 256": [" · 色数を256に削減", " · 顏色已減為 256 色", " · 颜色已减为 256 色"], "Downloading {0}": ["{0} をダウンロード中", "正在下載 {0}", "正在下载 {0}"], "Downloading {0} · {1} × {2} px": ["{0} をダウンロード中 · {1} × {2} px", "正在下載 {0} · {1} × {2} px", "正在下载 {0} · {1} × {2} px"], "Export failed: {0}": ["書き出しに失敗しました:{0}", "匯出失敗：{0}", "导出失败：{0}"], "this browser cannot make a sheet that large. Try a lower scale or frame rate.": ["このブラウザではこの大きさのシートを作れません。倍率かフレームレートを下げてください。", "這個瀏覽器無法產生這麼大的精靈圖，請降低倍率或影格率。", "这个浏览器无法生成这么大的精灵图，请降低倍率或帧率。"], "Open {0}, seed {1}": ["{0} を開く、シード {1}", "開啟 {0}，種子 {1}", "打开 {0}，种子 {1}"], "seed {0}": ["シード {0}", "種子 {0}", "种子 {0}"], "{0} s": ["{0}秒", "{0} 秒", "{0} 秒"], "Loop · repeats every {0} s with no seam": ["ループ · {0}秒ごとに継ぎ目なく繰り返す", "循環 · 每 {0} 秒無縫重複", "循环 · 每 {0} 秒无缝重复"], "Contact · hit-stop and white hero frame": ["接触 · ヒットストップと白いヒーローフレーム", "接觸 · 打擊停頓與白色英雄格", "接触 · 打击停顿与白色英雄帧"], "Release · flare, rings, burst": ["放出 · 閃光、リング、バースト", "釋放 · 閃光、光環、爆發", "释放 · 闪光、光环、爆发"], "Spread · particles fly, bounce and cool": ["広がり · パーティクルが飛び、跳ね、冷える", "擴散 · 粒子飛散、反彈、冷卻", "扩散 · 粒子飞散、反弹、冷却"], "Hold · embers drift, light fades": ["持続 · 火の粉が漂い、光が薄れる", "持續 · 餘燼飄散，光線轉弱", "持续 · 余烬飘散，光线转弱"], "Decay · the last of it clears": ["余韻 · 残りが消えていく", "尾韻 · 最後的痕跡散去", "尾韵 · 最后的痕迹散去"], "Empty · a one-shot ends with nothing left": ["空 · 単発エフェクトは何も残さず終わる", "空白 · 單次特效結束時什麼都不留", "空白 · 单次特效结束时什么都不留"], "Release · the beam pours into the hit": ["放出 · ビームが着弾点に注ぎ込む", "釋放 · 光束灌入命中點", "释放 · 光束灌入命中点"], "Release · the wave rolls across the floor": ["放出 · 波が床を転がっていく", "釋放 · 浪潮滾過地面", "释放 · 浪潮滚过地面"], "Release · shock fronts run out along the floor": ["放出 · 衝撃の前線が床を走る", "釋放 · 衝擊波沿地面向外推進", "释放 · 冲击波沿地面向外推进"], "Release · the scan paints the figure in": ["放出 · スキャンが人物を描き出す", "釋放 · 掃描逐行畫出人物", "释放 · 扫描逐行画出人物"], "Release · the column erupts": ["放出 · 柱が噴き上がる", "釋放 · 柱體噴發", "释放 · 柱体喷发"], "Cover · the transition closes over the screen": ["カバー · トランジションが画面を覆う", "覆蓋 · 轉場蓋住整個畫面", "覆盖 · 转场盖住整个画面"], "Covered · a beat with the screen hidden": ["覆われた · 画面が隠れたまま一拍", "已覆蓋 · 畫面隱藏片刻", "已覆盖 · 画面隐藏片刻"], "Reveal · it clears the same way it came": ["開く · 来たときと同じ向きに晴れる", "揭開 · 依原本的方向退去", "揭开 · 按原来的方向退去"], "Clear · the screen is back": ["クリア · 画面が戻った", "清除 · 畫面恢復", "清除 · 画面恢复"], "Position": ["位置", "位置", "位置"], "Size": ["大きさ", "大小", "大小"], "Particles": ["パーティクル", "粒子", "粒子"], "Wind-up": ["予備動作", "預備時間", "预备时间"], "Pour time": ["持続時間", "持續時間", "持续时间"], "Spark speed": ["火花の速さ", "火花速度", "火花速度"], "Gravity": ["重力", "重力", "重力"], "Hit-stop": ["ヒットストップ", "打擊停頓", "打击停顿"], "Screen shake": ["画面の揺れ", "畫面震動", "画面震动"], "Loop length": ["ループの長さ", "循環長度", "循环长度"], "Cycles per loop": ["1ループの回数", "每次循環的圈數", "每次循环的圈数"], "Spin": ["回転", "旋轉", "旋转"], "Facing": ["向き", "朝向", "朝向"], "Number": ["数値", "數字", "数字"], "Hit": ["ヒット", "命中", "命中"], "Clockwise": ["時計回り", "順時針", "顺时针"], "Counter-clockwise": ["反時計回り", "逆時針", "逆时针"], "Right": ["右", "右", "右"], "Left": ["左", "左", "左"], "Normal": ["通常", "普通", "普通"], "Critical": ["クリティカル", "暴擊", "暴击"], "One-shots": ["単発", "單次", "单次"], "Loops": ["ループ", "循環", "循环"], "UI": ["UI", "UI", "UI"], "Transitions": ["トランジション", "轉場", "转场"], "Critters": ["クリーチャー", "小生物", "小生物"], "Language": ["言語", "語言", "语言"]};
+  // anticipation captions: [English, Japanese, Traditional, Simplified]
+  const ANT_TR = {"strike": ["the bolt accelerates in", "ボルトが加速して飛んでくる", "光彈加速飛來", "光弹加速飞来"], "slam": ["something heavy falls", "重いものが落ちてくる", "重物落下", "重物落下"], "nova": ["energy gathers in", "エネルギーが集まる", "能量聚集", "能量聚集"], "geyser": ["the floor glows and rumbles", "床が光り、うなる", "地面發光、隆隆作響", "地面发光、隆隆作响"], "shatter": ["a crystal grows", "結晶が育つ", "水晶逐漸長大", "水晶逐渐长大"], "slash": ["a glint, then the blade sweeps", "きらめき、そして刃が振り抜かれる", "一閃，刀刃隨即揮過", "一闪，刀刃随即挥过"], "beam": ["energy gathers at the muzzle", "銃口にエネルギーが集まる", "能量在發射口聚集", "能量在发射口聚集"], "pillar": ["a mark lights on the floor", "床に印が灯る", "地面亮起標記", "地面亮起标记"], "implosion": ["everything is pulled in", "すべてが吸い込まれる", "一切被吸入", "一切被吸入"], "firework": ["the shell climbs", "玉が昇っていく", "煙火彈升空", "烟花弹升空"], "spikes": ["a line races along the floor", "床を線が走る", "一道線沿地面疾馳", "一道线沿地面疾驰"], "wave": ["the floor swells", "床が盛り上がる", "地面隆起", "地面隆起"], "chain": ["a charge builds in the hand", "手に電荷がたまる", "手中蓄積電荷", "手中蓄积电荷"], "claw": ["a glint, then the claws rake", "きらめき、そして爪が引き裂く", "一閃，利爪隨即抓下", "一闪，利爪随即抓下"], "meteor": ["a burning rock streaks in", "燃える岩が飛び込んでくる", "燃燒的岩石劃空而來", "燃烧的岩石划空而来"], "quake": ["the ground rumbles", "地面がうなる", "大地隆隆作響", "大地隆隆作响"], "dash": ["a crouch, then a blur", "身をかがめ、一瞬でかき消える", "一蹲，隨即化為殘影", "一蹲，随即化为残影"], "stars": ["light gathers and turns", "光が集まって回る", "光芒聚集旋轉", "光芒聚集旋转"], "warp": ["a beam slams down", "ビームが叩きつけられる", "光束猛然落下", "光束猛然落下"], "pickup": ["the item waits and glints", "アイテムが待ってきらめく", "道具靜候閃爍", "道具静候闪烁"], "levelup": ["light gathers round the figure", "人物のまわりに光が集まる", "光芒在人物周圍聚集", "光芒在人物周围聚集"], "damage": ["the hit lands", "一撃が当たる", "一擊命中", "一击命中"]}, ANT_PREFIX = ["Anticipation", "予備動作", "預備", "预备"];
+  const NOUN_TR = {"strike": ["ストライク", "落擊", "落击"], "slam": ["スラム", "重擊", "重击"], "nova": ["ノヴァ", "新星", "新星"], "geyser": ["イラプション", "噴發", "喷发"], "shatter": ["シャター", "碎裂", "碎裂"], "slash": ["スラッシュ", "斬擊", "斩击"], "beam": ["ビーム", "光束", "光束"], "pillar": ["ピラー", "光柱", "光柱"], "implosion": ["爆縮", "內爆", "内爆"], "spikes": ["スパイク", "尖刺", "尖刺"], "firework": ["花火", "煙火", "烟花"], "wave": ["大波", "浪潮", "浪潮"], "chain": ["チェイン", "連鎖", "连锁"], "claw": ["クロー", "爪擊", "爪击"], "meteor": ["メテオ", "隕石", "陨石"], "quake": ["地震", "地震", "地震"], "dash": ["ダッシュ", "衝刺", "冲刺"], "stars": ["スターバースト", "星爆", "星爆"], "warp": ["ワープ", "傳送", "传送"], "pickup": ["アイテム取得", "拾取", "拾取"], "levelup": ["レベルアップ", "升級", "升级"], "damage": ["ダメージ表示", "傷害數字", "伤害数字"], "wipe": ["ワイプ", "擦除", "擦除"], "iris": ["アイリス", "光圈", "光圈"], "dissolve": ["ディゾルブ", "溶解", "溶解"], "aura": ["オーラ", "靈氣", "灵气"], "portal": ["ポータル", "傳送門", "传送门"], "vortex": ["ヴォルテックス", "漩渦", "漩涡"], "rune": ["シジル", "法印", "法印"], "torch": ["かがり火", "火盆", "火盆"], "orb": ["オーブ", "寶珠", "宝珠"], "shield": ["結界", "結界", "结界"], "missile": ["ミサイル", "飛彈", "飞弹"], "fountain": ["噴水", "噴泉", "喷泉"], "cloud": ["雲", "雲", "云"], "beacon": ["ビーコン", "信標", "信标"], "swarm": ["光の群れ", "光群", "光群"], "breath": ["ブレス", "吐息", "吐息"], "ladder": ["ラダー", "電弧梯", "电弧梯"], "core": ["コア", "核心", "核心"], "pool": ["水面", "水池", "水池"], "scan": ["スキャン", "掃描", "扫描"], "cascade": ["滝", "瀑布", "瀑布"], "bats": ["コウモリ", "蝙蝠", "蝙蝠"], "slime": ["スライム", "史萊姆", "史莱姆"], "ghost": ["ゴースト", "幽靈", "幽灵"], "moths": ["蛾", "飛蛾", "飞蛾"]};
+  const ADJ_TR = {"flame": ["燃える", "燃燒的", "燃烧的"], "frost": ["凍てつく", "冰封的", "冰封的"], "storm": ["雷光の", "雷電的", "雷电的"], "dust": ["大地の", "塵土的", "尘土的"], "void": ["虚ろな", "虛空的", "虚空的"], "poison": ["毒の", "劇毒的", "剧毒的"], "holy": ["聖なる", "神聖的", "神圣的"], "water": ["潮の", "潮汐的", "潮汐的"], "none": ["", "", ""]};
+  const MAT_TR = {"flame": ["炎", "火焰", "火焰"], "frost": ["氷", "冰霜", "冰霜"], "storm": ["雷", "雷暴", "雷暴"], "dust": ["土", "塵土", "尘土"], "void": ["虚無", "虛空", "虚空"], "poison": ["毒", "毒", "毒"], "holy": ["聖", "神聖", "神圣"], "water": ["水", "水", "水"], "none": ["なし(素材なし)", "無（不用材質）", "无（不用材质）"]};
+  const HUE_TR = {"Crimson": ["深紅", "緋紅", "绯红"], "Ember": ["熾火", "餘燼", "余烬"], "Amber": ["琥珀", "琥珀", "琥珀"], "Gold": ["黄金", "金", "金"], "Lime": ["ライム", "青檸", "青柠"], "Jade": ["翡翠", "翡翠", "翡翠"], "Teal": ["青緑", "青綠", "青绿"], "Cyan": ["水色", "青", "青"], "Azure": ["紺碧", "蔚藍", "蔚蓝"], "Cobalt": ["コバルト", "鈷藍", "钴蓝"], "Violet": ["菫色", "紫羅蘭", "紫罗兰"], "Magenta": ["マゼンタ", "洋紅", "洋红"], "Rose": ["薔薇色", "玫瑰", "玫瑰"], "Ashen": ["灰色", "灰", "灰"]};
+  const t = (en, ...a) => {
+    const tr = lang !== 'en' && DYN_TR[en], str = tr ? tr[LI[lang]] : en;
+    return a.length ? str.replace(/\{(\d)\}/g, (_, i) => a[i]) : str;
+  };
+  const nounOf = (shape) => (lang === 'en' ? NOUN[shape] : NOUN_TR[shape][LI[lang]]);
+  const antOf = (shape) => (lang === 'en' ? `${ANT_PREFIX[0]} · ${ANT_TR[shape][0]}` : `${ANT_PREFIX[LI[lang] + 1]} · ${ANT_TR[shape][LI[lang] + 1]}`);
+  // the effect's name in the page's language, its noun marked for the accent colour
+  function nameHTML(rec) {
+    if (lang === 'en') { const w = rec.name.split(' '); return `${w.slice(0, -1).join(' ')} <span>${w[w.length - 1]}</span>`; }
+    const i = LI[lang], hue = HUE_TR[hueName(rec.pal[4])][i], adj = ADJ_TR[rec.mat][i], noun = NOUN_TR[rec.shape][i];
+    return lang === 'ja' ? `${adj}${hue}の<span>${noun}</span>` : `${adj}${hue}<span>${noun}</span>`;
+  }
+  const nameText = (rec) => nameHTML(rec).replace(/<[^>]+>/g, '').trim();
+  const matLabel = (m) => (lang === 'en' ? (m === 'none' ? 'None · no material' : `${capital(m)} · ${ADJ[m]}`) : MAT_TR[m][LI[lang]]);
+  const STATIC_SEL = 'header .eyebrow, h1, .lede, h2, h3, .note p, ul.plain li, th, td, section > p, p.caption, span.caption:not([id]), .lbl, .lbl > span, .seg label, '
+    + '.transport button:not(#play), .seedbox label, .seedbox button, .row-head button, .export-row button, #ed-reset, #copy, .checks span, summary > span, details.recipe:not(.edit) summary, .strip-lbl span, .sources a, footer';
+  const staticEls = [];
+  function collectStatic() {
+    for (const el of document.querySelectorAll(STATIC_SEL)) {
+      if (el.closest('#ed-knobs, #langs') || el.querySelector('input, select, output, canvas, button, textarea')) continue;
+      const key = el.textContent.replace(/\s+/g, ' ').trim();
+      if (STATIC_TR[key]) staticEls.push({ el, key, en: el.innerHTML });
+    }
+  }
+  function detectLang() {
+    try { const v = localStorage.getItem('pfx-lang'); if (v === 'en' || LI[v] !== undefined) return v; } catch (e) { /* no stored choice */ }
+    for (const l of navigator.languages || [navigator.language || 'en']) {
+      const x = String(l).toLowerCase();
+      if (x.startsWith('ja')) return 'ja';
+      if (x.startsWith('zh')) return /hant|tw|hk|mo/.test(x) ? 'zh-Hant' : 'zh-Hans';
+      if (x.startsWith('en')) return 'en';
+    }
+    return 'en';
+  }
+  function setLang(v, save = true) {
+    lang = LI[v] !== undefined ? v : 'en';
+    document.documentElement.lang = lang;
+    for (const s of staticEls) s.el.innerHTML = lang === 'en' ? s.en : STATIC_TR[s.key][LI[lang]];
+    const r = $('lang-' + lang);
+    if (r) r.checked = true;
+    $('langs').setAttribute('aria-label', t('Language'));
+    if (save) try { localStorage.setItem('pfx-lang', lang); } catch (e) { /* not remembered */ }
+    setPlayLabel();
+    if (main) { $('name').innerHTML = nameHTML(main.rec); showExportInfo(); buildEditor(); }
+    relabelThumbs();
+    for (const th of thumbs) th.dirty = true;
+    dirty = true;
+  }
+
   // the edit panel
   const shownNumber = (p) => ('dmg' in p ? (p.crit ? p.dmg * 2 : p.dmg) : p.gain);
   const fmtKnob = (k, v) => (k.fmt ? k.fmt(v) : `×${(+v).toFixed(2)}`);
@@ -3111,9 +3195,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   function buildEditor() {
     const { shape, mat, p } = editBase(base, edits), opt = (v, label) => `<option value="${v}">${label}</option>`;
-    $('ed-shape').innerHTML = CATEGORIES.map(([id, label]) => `<optgroup label="${label}">${[...ALL_SHOTS, ...ALL_LOOPS].filter((v) => categoryOf(v) === id).map((v) => opt(v, NOUN[v])).join('')}</optgroup>`).join('');
+    $('ed-shape').innerHTML = CATEGORIES.map(([id, label]) => `<optgroup label="${t(label)}">${[...ALL_SHOTS, ...ALL_LOOPS].filter((v) => categoryOf(v) === id).map((v) => opt(v, nounOf(v))).join('')}</optgroup>`).join('');
     $('ed-shape').value = shape;
-    $('ed-mat').innerHTML = EDIT_MATS.map((v) => opt(v, v === 'none' ? 'None · no material' : `${capital(v)} · ${ADJ[v]}`)).join('');
+    $('ed-mat').innerHTML = EDIT_MATS.map((v) => opt(v, matLabel(v))).join('');
     $('ed-mat').value = mat;
     $('ed-hue').value = edits.hue || 0;
     $('ed-sat').value = edits.sat ?? 1;
@@ -3122,9 +3206,9 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     refreshSwatches();
     $('ed-knobs').innerHTML = KNOBS.filter((k) => knobFits(k, shape, p)).map((k) => {
       const cur = k.id in edits ? edits[k.id] : k.num ? shownNumber(p) : k.abs ? p[k.abs] : k.pick ? Number(p[k.pick]) : 1;
-      if (k.num) return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label}</label><input type="text" inputmode="numeric" maxlength="6" class="num-in" id="kn-${k.id}" data-k="${k.id}" value="${cur}" aria-label="Number to show"></div>`;
-      if (k.pick) return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label}</label><select id="kn-${k.id}" data-k="${k.id}">${k.values.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${k.names(v)}</option>`).join('')}</select></div>`;
-      return `<div class="group"><label class="lbl" for="kn-${k.id}">${k.label} <output>${fmtKnob(k, cur)}</output></label><input type="range" id="kn-${k.id}" data-k="${k.id}" min="${k.min}" max="${k.max}" step="${k.step || 0.05}" value="${cur}"></div>`;
+      if (k.num) return `<div class="group"><label class="lbl" for="kn-${k.id}">${t(k.label)}</label><input type="text" inputmode="numeric" maxlength="6" class="num-in" id="kn-${k.id}" data-k="${k.id}" value="${cur}" aria-label="Number to show"></div>`;
+      if (k.pick) return `<div class="group"><label class="lbl" for="kn-${k.id}">${t(k.label)}</label><select id="kn-${k.id}" data-k="${k.id}">${k.values.map((v) => `<option value="${v}"${v === cur ? ' selected' : ''}>${t(k.names(v))}</option>`).join('')}</select></div>`;
+      return `<div class="group"><label class="lbl" for="kn-${k.id}">${t(k.label)} <output>${fmtKnob(k, cur)}</output></label><input type="range" id="kn-${k.id}" data-k="${k.id}" min="${k.min}" max="${k.max}" step="${k.step || 0.05}" value="${cur}"></div>`;
     }).join('');
   }
   // set or clear one edit; a value back at the seed's own is dropped, so the link stays short
@@ -3151,20 +3235,20 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
 
   const phaseOf = (pl, s) => {
     const rec = pl.rec;
-    if (rec.loop) return `Loop · repeats every ${rec.p.period} s with no seam`;
+    if (rec.loop) return t('Loop · repeats every {0} s with no seam', rec.p.period);
     const W0 = rec.p.wind, e = s - W0, tail = sustain(rec);
     if (TRANSITIONS.includes(rec.shape)) {
-      if (pl.tt < W0) return 'Cover · the transition closes over the screen';
-      if (S.hitstop && pl.tt < W0 + rec.p.stop) return 'Covered · a beat with the screen hidden';
-      return e < tail ? 'Reveal · it clears the same way it came' : 'Clear · the screen is back';
+      if (pl.tt < W0) return t('Cover · the transition closes over the screen');
+      if (S.hitstop && pl.tt < W0 + rec.p.stop) return t('Covered · a beat with the screen hidden');
+      return e < tail ? t('Reveal · it clears the same way it came') : t('Clear · the screen is back');
     }
-    if (pl.tt < W0) return { strike: 'Anticipation · the bolt accelerates in', slam: 'Anticipation · something heavy falls', nova: 'Anticipation · energy gathers in', geyser: 'Anticipation · the floor glows and rumbles', shatter: 'Anticipation · a crystal grows', slash: 'Anticipation · a glint, then the blade sweeps', beam: 'Anticipation · energy gathers at the muzzle', pillar: 'Anticipation · a mark lights on the floor', implosion: 'Anticipation · everything is pulled in', firework: 'Anticipation · the shell climbs', spikes: 'Anticipation · a line races along the floor', wave: 'Anticipation · the floor swells', chain: 'Anticipation · a charge builds in the hand', claw: 'Anticipation · a glint, then the claws rake', meteor: 'Anticipation · a burning rock streaks in', quake: 'Anticipation · the ground rumbles', dash: 'Anticipation · a crouch, then a blur', stars: 'Anticipation · light gathers and turns', warp: 'Anticipation · a beam slams down', pickup: 'Anticipation · the item waits and glints', levelup: 'Anticipation · light gathers round the figure', damage: 'Anticipation · the hit lands' }[rec.shape];
-    if (S.hitstop && pl.tt < W0 + rec.p.stop) return 'Contact · hit-stop and white hero frame';
-    if (e < 0.15) return 'Release · flare, rings, burst';
-    if (e < 1.0 + tail) return e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : rec.shape === 'wave' ? 'Release · the wave rolls across the floor' : rec.shape === 'quake' ? 'Release · shock fronts run out along the floor' : rec.shape === 'warp' ? 'Release · the scan paints the figure in' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool';
-    if (e < 2.2 + tail) return 'Hold · embers drift, light fades';
-    if (e < 3.2 + tail) return 'Decay · the last of it clears';
-    return 'Empty · a one-shot ends with nothing left';
+    if (pl.tt < W0) return antOf(rec.shape);
+    if (S.hitstop && pl.tt < W0 + rec.p.stop) return t('Contact · hit-stop and white hero frame');
+    if (e < 0.15) return t('Release · flare, rings, burst');
+    if (e < 1.0 + tail) return t(e < tail ? (rec.shape === 'beam' ? 'Release · the beam pours into the hit' : rec.shape === 'wave' ? 'Release · the wave rolls across the floor' : rec.shape === 'quake' ? 'Release · shock fronts run out along the floor' : rec.shape === 'warp' ? 'Release · the scan paints the figure in' : 'Release · the column erupts') : 'Spread · particles fly, bounce and cool');
+    if (e < 2.2 + tail) return t('Hold · embers drift, light fades');
+    if (e < 3.2 + tail) return t('Decay · the last of it clears');
+    return t('Empty · a one-shot ends with nothing left');
   };
 
   function renderMain() {
@@ -3189,14 +3273,22 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
       const rec = pickRecipe();
       const btn = document.createElement('button');
       btn.type = 'button'; btn.className = 'thumb';
-      btn.innerHTML = `<canvas width="160" height="96" aria-hidden="true"></canvas><span>${rec.name}</span><small>seed ${rec.seed}</small>`;
-      btn.setAttribute('aria-label', `Open ${rec.name}, seed ${rec.seed}`);
+      btn.innerHTML = `<canvas width="160" height="96" aria-hidden="true"></canvas><span></span><small></small>`;
       const pl = makePlayer(rec);
       pl.tt = reduce ? restTime(rec) : (i * 0.37) % rec.total;
       const tctx = btn.querySelector('canvas').getContext('2d');
       btn.addEventListener('click', () => { load(rec); S.playing = true; setPlayLabel(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); });
       box.appendChild(btn);
-      thumbs.push({ pl, tctx, dirty: true });
+      thumbs.push({ pl, tctx, dirty: true, btn });
+    }
+    relabelThumbs();
+  }
+  function relabelThumbs() {
+    for (const th of thumbs) {
+      const rec = th.pl.rec;
+      th.btn.querySelector('span').textContent = nameText(rec);
+      th.btn.querySelector('small').textContent = t('seed {0}', rec.seed);
+      th.btn.setAttribute('aria-label', t('Open {0}, seed {1}', nameText(rec), rec.seed));
     }
   }
   const timg = new ImageData(W, H);
@@ -3240,7 +3332,7 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
 
   // controls
-  const setPlayLabel = () => { $('play').textContent = S.playing ? 'Pause' : 'Play'; };
+  const setPlayLabel = () => { $('play').textContent = S.playing ? t('Pause') : t('Play'); };
   const on = (name, fn) => document.querySelectorAll(`input[name=${name}]`).forEach((el) => el.addEventListener('change', () => { if (el.checked) { fn(el.value); dirty = true; } }));
   on('view', (v) => { S.view = v; });
   on('alpha', () => {});
@@ -3297,16 +3389,16 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   });
   $('copy').addEventListener('click', () => {
     const text = $('recipe-json').textContent;
-    const done = () => { $('copy-msg').textContent = 'Copied'; };
-    const fallback = () => { const r = document.createRange(); r.selectNodeContents($('recipe-json')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copy-msg').textContent = 'Selected. Press Ctrl+C or ⌘C to copy.'; };
+    const done = () => { $('copy-msg').textContent = t('Copied'); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($('recipe-json')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('copy-msg').textContent = t('Selected. Press Ctrl+C or ⌘C to copy.'); };
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (err) { fallback(); }
   });
   // export
   const pick = (name) => document.querySelector(`input[name=${name}]:checked`).value;
-  const exportOpts = () => ({ fps: +pick('xfps'), scale: +pick('xscale'), clear: pick('xbg') === 'clear', dither: $('alpha-dither').checked, hitstop: S.hitstop, look });
+  const exportOpts = () => ({ fps: +pick('xfps'), scale: +pick('xscale'), clear: pick('xbg') === 'clear', dither: $('alpha-dither').checked, hitstop: S.hitstop, look, lang });
   function showExportInfo() {
     const o = exportOpts(), { times, end } = exportTimes(main.rec, o.fps), n = times.length, { cols, rows } = sheetGrid(n);
-    $('export-info').textContent = `${n} frames · ${(end - times[0]).toFixed(2)} s · sheet ${cols * W * o.scale} × ${rows * H * o.scale} px`;
+    $('export-info').textContent = t('{0} frames · {1} s · sheet {2} × {3} px', n, (end - times[0]).toFixed(2), cols * W * o.scale, rows * H * o.scale);
     $('export-msg').textContent = '';
   }
   function save(blob, name) {
@@ -3317,27 +3409,27 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
   }
   async function runExport(kind) {
     const rec = main.rec, o = exportOpts(), msg = $('export-msg');
-    msg.textContent = kind === 'gif' ? 'Encoding the GIF…' : 'Drawing the frames…';
+    msg.textContent = kind === 'gif' ? t('Encoding the GIF…') : t('Drawing the frames…');
     await new Promise((r) => setTimeout(r, 30)); // let the message paint first
     try {
       if (kind === 'gif') {
         const g = encodeGif(rec, o), name = exportName(rec, o) + '.gif';
         save(g.blob, name);
-        msg.textContent = `Downloading ${name} · ${g.frames} frames · ${Math.ceil(g.blob.size / 1024)} KB${g.exact ? '' : ' · colours reduced to 256'}`;
+        msg.textContent = t('Downloading {0} · {1} frames · {2} KB', name, g.frames, Math.ceil(g.blob.size / 1024)) + (g.exact ? '' : t(' · colours reduced to 256'));
       } else {
         const sh = spriteSheet(rec, o);
         if (kind === 'json') {
           save(new Blob([JSON.stringify(sh.json, null, 1)], { type: 'application/json' }), sh.base + '.json');
-          msg.textContent = `Downloading ${sh.base}.json`;
+          msg.textContent = t('Downloading {0}', sh.base + '.json');
         } else {
           const blob = await new Promise((r) => sh.canvas.toBlob(r, 'image/png'));
           // some browsers, iOS Safari in particular, cap canvas size and hand back nothing
-          if (!blob) throw new Error('this browser cannot make a sheet that large. Try a lower scale or frame rate.');
+          if (!blob) throw new Error(t('this browser cannot make a sheet that large. Try a lower scale or frame rate.'));
           save(blob, sh.base + '.png');
-          msg.textContent = `Downloading ${sh.base}.png · ${sh.canvas.width} × ${sh.canvas.height} px`;
+          msg.textContent = t('Downloading {0} · {1} × {2} px', sh.base + '.png', sh.canvas.width, sh.canvas.height);
         }
       }
-    } catch (err) { msg.textContent = `Export failed: ${err.message}`; }
+    } catch (err) { msg.textContent = t('Export failed: {0}', err.message); }
     dirty = true;
   }
   on('xfps', showExportInfo);
@@ -3362,6 +3454,11 @@ footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--line)
     if (l.look !== look) setLook(l.look);
     if (l.seed !== base.seed || encodeEdits(l.ed) !== encodeEdits(edits)) load(makeRecipe(l.seed), true, l.ed);
   });
+
+  $('langs').innerHTML = LANGS.map(([v, label]) => `<input type="radio" name="lang" id="lang-${v}" value="${v}"><label for="lang-${v}">${label}</label>`).join('');
+  on('lang', (v) => setLang(v));
+  collectStatic();
+  setLang(detectLang(), false);
 
   const link = parseLink();
   if (link) setLook(link.look);
