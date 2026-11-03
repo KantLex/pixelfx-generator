@@ -1,19 +1,22 @@
 # pixelfx-generator
 
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
-12.9 billion of them. Its shape, material, timing and palette all come from that one number.
+17.2 billion of them. Its shape, material, timing and palette all come from that one number.
 
 Open `index.html` in a browser. There is no build step and nothing to install. The page loads its fonts from Google
 Fonts and runs everything else inline.
 
 ## What it makes
 
-**296 effect types**: 37 shapes × 8 materials, each with its own range of variations.
+**376 effect types**: 47 shapes × 8 materials, each with its own range of variations.
 
 | | Shapes |
 |---|---|
 | One-shots | strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw, meteor, quake, dash, starburst, warp |
+| UI pops (one-shots) | pickup, level up, hit number |
+| Screen transitions (one-shots) | wipe, iris, dissolve |
 | Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath, ladder, core, pool, scan, cascade |
+| Critters (loops) | bats, slime, ghost, moths |
 
 Materials are **flame**, **frost**, **storm**, **dust**, **void**, **poison**, **holy** and **water**. They change
 what the effect throws off: fire that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds,
@@ -38,12 +41,22 @@ The newer shapes:
 - **Dash**: the figure crouches, blurs across the floor and lands on the hit, leaving fading after-images.
 - **Starburst**: light gathers and turns, then spinning stars fly out, slow, twinkle and drift down.
 - **Warp**: a beam slams down and a scan line paints the figure in, white-hot rows cooling to its own colours.
+- **Pickup**: a coin or gem bobs and glints on the floor, then leaps, spins, bursts into glints and leaves a "+N".
+- **Level up**: light gathers round the figure, a column of light shoots up and "LEVEL UP!" drops in letter by
+  letter.
+- **Hit number**: a damage number pops, overshoots and floats off; a critical hit doubles it, says "CRIT!" and
+  flashes. The UI effects use a small built-in 3 × 5 pixel font with an ink outline.
+- **Wipe**, **iris** and **dissolve**: screen transitions. The screen fills with the palette's darkest tone behind a
+  burning edge (a tilted band, a closing circle, or squares growing out from a point), holds for the hit-stop, then
+  clears the same way. Exported on a transparent ground, a transition's sprite sheet works as an overlay.
 - Loops: **brazier** (a flame bowl on legs), **orb** (a turning crystal in rings), **ward** (a glass dome that takes
   hits), **missile** (a projectile in flight), **fountain** (a jet breaking into arcs over a basin), **cloud** (a
   boiling cloud raining the material), **beacon** (a pad with a column and rising rings of light), **swarm** (motes
   on figure-of-eight paths), **breath** (a stream pouring from a spout), **ladder** (an arc climbing two rods),
   **core** (a beating core in a turning cage), **pool** (drops landing in a pool with spreading rings), **scan** (a
   scan line sweeping a figure) and **cascade** (the material pouring over a lip into foam).
+- Critters: **bats** (on looping flight paths, wings beating, eyes glowing), **slime** (crouches, leaps, splats and
+  blinks), **ghost** (a sheet with a waving hem that bobs and fades) and **moths** (circling a lamp on a post).
 
 ### Generations of seeds
 
@@ -55,6 +68,7 @@ Seeds are shareable, so adding shapes must not change old ones. Each batch of ne
 | Second | 2,147,483,648 to 4,294,967,295 | 16 shapes, 8 materials |
 | Third | 4,294,967,296 to 8,589,934,591 | 27 shapes, 8 materials |
 | Fourth | 8,589,934,592 to 12,884,901,887 | 37 shapes, 8 materials |
+| Fifth | 12,884,901,888 to 17,179,869,183 | 47 shapes, 8 materials |
 
 Every seed plays exactly as it did when its generation was added. Generate and the variations strip pick seeds from
 the newest generation; older seeds still open from a link or the seed box.
@@ -80,7 +94,7 @@ in the middle, and the hue leans toward yellow in the highlights.
 The **Edit this effect** panel sits open under the controls (the **Edit** button jumps to it), and changes the current
 effect without leaving its seed:
 
-- **Shape** and **material**: any of the 37 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
+- **Shape** and **material**: any of the 47 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
   from the seed; a new material keeps the shape's numbers and only refreshes the ones the material decides (puffs,
   smoke, embers, lightning and so on). Pick **None** for no material at all: the shape keeps its sparks, rings,
   cracks, shards and light, loops keep plain motes of light where the material would be, and the name drops its
