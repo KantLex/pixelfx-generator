@@ -5,6 +5,8 @@ English | [日本語](README.ja.md)
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
 21.5 billion of them. Its shape, material, timing and palette all come from that one number.
 
+![Twelve effects from the generator playing at once: a meteor, a portal, a level up, a firework, a treasure chest, a vortex, a slash, jellyfish, a combo counter, a brazier, a frog and a nova](docs/hero.gif)
+
 Open `index.html` in a browser. There is no build step and nothing to install. The page loads its fonts from Google
 Fonts and runs everything else inline.
 
@@ -19,6 +21,26 @@ Fonts and runs everything else inline.
 | Screen transitions (one-shots) | wipe, iris, dissolve, blinds, checker, diamonds, clock wipe, curtain, spiral, drip |
 | Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath, ladder, core, pool, scan, cascade |
 | Critters (loops) | bats, slime, ghost, moths, frog, birds, butterflies, leaping fish, fireflies, jellyfish, snake, spider |
+
+**One-shots**
+
+![Slash, meteor, firework and chain](docs/shots.gif)
+
+**Seamless loops**
+
+![Portal, vortex, brazier and fountain](docs/loops.gif)
+
+**UI pops**
+
+![Level up, treasure chest, combo and heartbreak](docs/ui.gif)
+
+**Screen transitions**
+
+![Diamonds, clock wipe, curtain and spiral](docs/transitions.gif)
+
+**Critters**
+
+![Frog, jellyfish, leaping fish and bats](docs/critters.gif)
 
 Materials are **flame**, **frost**, **storm**, **dust**, **void**, **poison**, **holy** and **water**. They change
 what the effect throws off: fire that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds,
@@ -78,6 +100,10 @@ The newer shapes:
   **fireflies** (blinking over grass), **jellyfish** (bells pulsing upward, tentacles trailing), **snake**
   (slithering across the floor, tongue flicking) and **spider** (dropping on a thread and climbing back).
 
+### How a seed becomes an effect
+
+![Seed 20482 decides a shape (nova), a material (flame), about 25 numbers and an eight-step palette, which together make Burning Rose Nova](docs/seed.png)
+
 ### Generations of seeds
 
 Seeds are shareable, so adding shapes must not change old ones. Each batch of new shapes gets its own seed range:
@@ -98,6 +124,8 @@ Each seed also builds its own eight-step palette. Lightness climbs from near bla
 in the middle, and the hue leans toward yellow in the highlights.
 
 ## Using the page
+
+![The page: the effect's name and seed above the player, the transport buttons, and the Generate, Look and View buffer controls](docs/page.png)
 
 - **Generate** a new effect, or a **Variation** that keeps the effect and nudges its numbers.
 - Keep the **palette** or the **shape** while changing the other.
@@ -151,6 +179,10 @@ in every language.
 The same effects can be finished in four looks. The look only changes how a frame is drawn at the end, so every seed,
 edit and effect works in both.
 
+![The same aura in the four looks: Pixel and Cel outline on the top row, Handheld and Ink sketch below](docs/looks.png)
+
+*Top: Pixel, Cel outline. Bottom: Handheld, Ink sketch.*
+
 - **Pixel** (the default): partial transparency breaks into a Bayer dither and glow falls off smoothly.
 - **Cel outline**: a toon style. Anything at least a third covered becomes a solid shape, every solid shape gets a
   one-pixel ink outline, glow is cut into three flat bands, and smoke and vapour turn into solid outlined puffs. The
@@ -190,6 +222,15 @@ can move its camera instead. Exports follow the page's dither and hit-stop setti
 whole milliseconds (or hundredths of a second in the GIF) but always add up to the exact running time.
 
 ## How it draws
+
+![The same moment of a slam three ways: the color buffer alone, the light buffer alone, and the final image with light added on top](docs/buffers.png)
+
+*Color buffer · light buffer · final image.*
+
+![A slam from start to finish in six frames](docs/anatomy.png)
+
+*A one-shot from start to finish: the anticipation, the white hero frame on contact, release, spread, hold, and the
+empty last frame.*
 
 - **Two buffers.** Hard pixels go into a color buffer; glow goes into a light buffer that is added on top at the end.
 - **Ordered dither.** Partial transparency is a 4 × 4 Bayer pattern, not blending. Smoke, vapour and dust are the
