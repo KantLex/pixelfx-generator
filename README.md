@@ -1,22 +1,22 @@
 # pixelfx-generator
 
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
-17.2 billion of them. Its shape, material, timing and palette all come from that one number.
+21.5 billion of them. Its shape, material, timing and palette all come from that one number.
 
 Open `index.html` in a browser. There is no build step and nothing to install. The page loads its fonts from Google
 Fonts and runs everything else inline.
 
 ## What it makes
 
-**376 effect types**: 47 shapes × 8 materials, each with its own range of variations.
+**560 effect types**: 70 shapes × 8 materials, each with its own range of variations.
 
 | | Shapes |
 |---|---|
 | One-shots | strike, slam, nova, eruption, shatter, slash, beam, pillar, implosion, spikes, firework, wave, chain, claw, meteor, quake, dash, starburst, warp |
-| UI pops (one-shots) | pickup, level up, hit number |
-| Screen transitions (one-shots) | wipe, iris, dissolve |
+| UI pops (one-shots) | pickup, level up, hit number, heal, combo, countdown, treasure chest, heartbreak, potion, unlock, star rating |
+| Screen transitions (one-shots) | wipe, iris, dissolve, blinds, checker, diamonds, clock wipe, curtain, spiral, drip |
 | Seamless loops | aura, portal, vortex, sigil, brazier, orb, ward, missile, fountain, cloud, beacon, swarm, breath, ladder, core, pool, scan, cascade |
-| Critters (loops) | bats, slime, ghost, moths |
+| Critters (loops) | bats, slime, ghost, moths, frog, birds, butterflies, leaping fish, fireflies, jellyfish, snake, spider |
 
 Materials are **flame**, **frost**, **storm**, **dust**, **void**, **poison**, **holy** and **water**. They change
 what the effect throws off: fire that cools into smoke, glowing vapour and falling flakes, lightning, dust clouds,
@@ -46,9 +46,23 @@ The newer shapes:
   letter.
 - **Hit number**: a damage number pops, overshoots and floats off; a critical hit doubles it, says "CRIT!" and
   flashes. The UI effects use a small built-in 3 × 5 pixel font with an ink outline.
+- **Heal**: crosses of light rise round the figure, it glows, and a "+N" floats up.
+- **Combo**: hits land one after another round a counter that climbs, its timer bar draining between hits, then the
+  total slams in and shakes.
+- **Countdown**: "3", "2", "1" zoom in on their beats with a ring running out from each, then "GO!" bursts.
+- **Treasure chest**: the chest shakes and leaks light at the seam, the lid flips open, light pours up, coins
+  fountain out and bounce, and a "+N" rises.
+- **Heartbreak**: a row of hearts beats; the last one flickers, cracks and splits in two, leaving an empty heart.
+- **Potion**: a flask bubbles and pops its cork, then bursts into glass and a rising spiral of the material.
+- **Unlock**: a key slides into a padlock and turns, the shackle springs open and the lock lifts away.
+- **Star rating**: three slots; the stars won fill one by one, each punching in, the last on contact.
 - **Wipe**, **iris** and **dissolve**: screen transitions. The screen fills with the palette's darkest tone behind a
   burning edge (a tilted band, a closing circle, or squares growing out from a point), holds for the hit-stop, then
   clears the same way. Exported on a transparent ground, a transition's sprite sheet works as an overlay.
+- **Blinds**, **checker**, **diamonds**, **clock wipe**, **curtain**, **spiral** and **drip**: more transitions
+  built on one rule. Every pixel has a moment when the cover reaches it (slats filling top to bottom, squares growing
+  in two turns, diamonds sweeping across, a hand going round, two drapes meeting, cells closing in a spiral, columns
+  running down), and it clears again in the same order.
 - Loops: **brazier** (a flame bowl on legs), **orb** (a turning crystal in rings), **ward** (a glass dome that takes
   hits), **missile** (a projectile in flight), **fountain** (a jet breaking into arcs over a basin), **cloud** (a
   boiling cloud raining the material), **beacon** (a pad with a column and rising rings of light), **swarm** (motes
@@ -56,7 +70,11 @@ The newer shapes:
   **core** (a beating core in a turning cage), **pool** (drops landing in a pool with spreading rings), **scan** (a
   scan line sweeping a figure) and **cascade** (the material pouring over a lip into foam).
 - Critters: **bats** (on looping flight paths, wings beating, eyes glowing), **slime** (crouches, leaps, splats and
-  blinks), **ghost** (a sheet with a waving hem that bobs and fades) and **moths** (circling a lamp on a post).
+  blinks), **ghost** (a sheet with a waving hem that bobs and fades), **moths** (circling a lamp on a post),
+  **frog** (throat swelling, tongue flicking at a circling fly), **birds** (a flock crossing the sky and wrapping
+  round), **butterflies** (round swaying flowers), **leaping fish** (arcing out of a pond and splashing back),
+  **fireflies** (blinking over grass), **jellyfish** (bells pulsing upward, tentacles trailing), **snake**
+  (slithering across the floor, tongue flicking) and **spider** (dropping on a thread and climbing back).
 
 ### Generations of seeds
 
@@ -69,6 +87,7 @@ Seeds are shareable, so adding shapes must not change old ones. Each batch of ne
 | Third | 4,294,967,296 to 8,589,934,591 | 27 shapes, 8 materials |
 | Fourth | 8,589,934,592 to 12,884,901,887 | 37 shapes, 8 materials |
 | Fifth | 12,884,901,888 to 17,179,869,183 | 47 shapes, 8 materials |
+| Sixth | 17,179,869,184 to 21,474,836,479 | 70 shapes, 8 materials |
 
 Every seed plays exactly as it did when its generation was added. Generate and the variations strip pick seeds from
 the newest generation; older seeds still open from a link or the seed box.
@@ -96,7 +115,7 @@ in the middle, and the hue leans toward yellow in the highlights.
 The **Edit this effect** panel sits open under the controls (the **Edit** button jumps to it), and changes the current
 effect without leaving its seed:
 
-- **Shape** and **material**: any of the 47 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
+- **Shape** and **material**: any of the 70 shapes and 8 materials. A new shape gets a fresh set of numbers drawn
   from the seed; a new material keeps the shape's numbers and only refreshes the ones the material decides (puffs,
   smoke, embers, lightning and so on). Pick **None** for no material at all: the shape keeps its sparks, rings,
   cracks, shards and light, loops keep plain motes of light where the material would be, and the name drops its
@@ -105,7 +124,7 @@ effect without leaving its seed:
 - **Knobs** for the shape in hand: position, size, particle count, and for one-shots the wind-up, pour time, spark
   speed, gravity, hit-stop, screen shake and facing; for loops the loop length, cycles per loop and spin. Loops stay
   seamless whatever the settings.
-- **Number** and **Hit** for the UI pops: type the number a hit number or pickup shows (up to six digits; it is
+- **Number** and **Hit** for the UI pops: type the number a hit number, pickup, heal, combo or treasure chest shows (up to six digits; it is
   shown exactly as typed, and clearing the box brings back the seed's own), and switch a hit number between
   **Normal** and **Critical**. Both are kept in the link, for example `#s20482~crit:1,num:9999,shape:damage`.
 
