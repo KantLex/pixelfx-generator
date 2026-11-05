@@ -1,5 +1,7 @@
 # pixelfx-generator
 
+English | [日本語](README.ja.md)
+
 A generator for pixel-art effects, drawn entirely in code. Every seed gives a different effect, and there are about
 21.5 billion of them. Its shape, material, timing and palette all come from that one number.
 
